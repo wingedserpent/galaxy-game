@@ -1,0 +1,45 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UnitHUD : MonoBehaviour {
+
+	public PercentageBar healthBar;
+	public bool hideBarsWhenFull = false;
+	public float scalingRatio = 50f;
+	public float yPosRatio = 2000f;
+
+	public Entity Entity { get; set; }
+	private RectTransform rectTransform;
+
+	private void Awake() {
+		rectTransform = GetComponent<RectTransform>();
+	}
+
+	private void Start() {
+		if (GetComponent<VisibilityToggle>() != null) {
+			GetComponent<VisibilityToggle>().EntityController = Entity.EntityController;
+		}
+	}
+
+	private void Update() {
+		float distance = Vector3.Distance(Camera.main.transform.position, Entity.transform.position);
+
+		//add to y pos based on distance
+		Vector3 newPos = Camera.main.WorldToScreenPoint(Entity.transform.position);
+		newPos.y += (yPosRatio / distance);
+		rectTransform.position = newPos;
+
+		//scale based on distance
+		float scalingFactor = (scalingRatio / distance);
+		rectTransform.localScale = new Vector3(scalingFactor, scalingFactor, scalingFactor);
+
+		UpdateHealthBar();
+	}
+
+	private void UpdateHealthBar() {
+		healthBar.SetDisplayAmounts(Entity.properties.currentHealth, Entity.properties.maxHealth);
+		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.properties.currentHealth < Entity.properties.maxHealth);
+	}
+}

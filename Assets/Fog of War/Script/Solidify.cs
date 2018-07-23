@@ -1,0 +1,15 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Solidify : MonoBehaviour
+{
+    public Shader flatShader;
+    Camera cam;
+	void OnEnable ()
+	{
+	    cam = GetComponent<Camera>();
+        cam.SetReplacementShader(flatShader, "");
+	}
+	
+}
