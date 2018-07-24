@@ -965,6 +965,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca2fd9ac4a4db5a44b0557e8a5125921, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectionBoxInnerColor: {r: 1, g: 1, b: 1, a: 0.09803922}
+  selectionBoxBorderColor: {r: 1, g: 1, b: 1, a: 1}
   ignoreLayers:
     serializedVersion: 2
     m_Bits: 3334
@@ -1074,7 +1076,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ef8c68bade09b41aca258d42a632f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastTab: 1
+  lastTab: 0
   movementSettingsFoldout: 0
   zoomingSettingsFoldout: 0
   rotationSettingsFoldout: 0
@@ -1083,9 +1085,9 @@ MonoBehaviour:
   targetingSettingsFoldout: 0
   inputSettingsFoldout: 0
   useFixedUpdate: 0
-  keyboardMovementSpeed: 20
-  screenEdgeMovementSpeed: 10
-  followingSpeed: 5
+  keyboardMovementSpeed: 30
+  screenEdgeMovementSpeed: 20
+  followingSpeed: 100
   rotationSpeed: 40
   panningSpeed: 20
   mouseRotationSpeed: 40
@@ -1110,7 +1112,7 @@ MonoBehaviour:
   useKeyboardInput: 1
   horizontalAxis: Horizontal
   verticalAxis: Vertical
-  usePanning: 1
+  usePanning: 0
   panningKey: 325
   useKeyboardZooming: 1
   zoomInKey: 61
@@ -1879,7 +1881,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

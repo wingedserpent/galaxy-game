@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public delegate void OnGameStateInitialized();
 
@@ -55,6 +56,12 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 
 	public void EndGame() {
 		Debug.Log("Game Over!");
+
+		Invoke("RestartGame", 10f);
+	}
+
+	private void RestartGame() {
+		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
 	public void OnPlayerJoined(Player player) {

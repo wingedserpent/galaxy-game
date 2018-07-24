@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class ServerGameManager : Singleton<ServerGameManager> {
 
@@ -73,6 +74,12 @@ public class ServerGameManager : Singleton<ServerGameManager> {
 	public void EndGame() {
 		GameState.CurrentState = GameStates.GAME_COMPLETED;
 		serverNetworkManager.EndGame(GameState);
+
+		Invoke("RestartGame", 10f);
+	}
+
+	private void RestartGame() {
+		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
 	public Player PlayerJoined(string playerId, string name) {
