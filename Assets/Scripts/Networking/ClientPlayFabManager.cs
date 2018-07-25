@@ -12,13 +12,17 @@ public class ClientPlayFabManager : Singleton<ClientPlayFabManager> {
 	public string loginId = "DanTest";
 
 	public string PlayFabId { get; private set; }
+	private bool isJoining = false;
 
 	private ClientNetworkManager clientNetworkManager;
 
 	public void Start() {
 		clientNetworkManager = ClientNetworkManager.Instance;
+	}
 
-		if (!clientNetworkManager.offlineTest) {
+	public void StartJoinProcess() {
+		if (!isJoining) {
+			isJoining = true;
 			clientNetworkManager.OnJoinServerUpdate("PlayFab: Attempting to log into PlayFab.");
 			PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest { CustomId = loginId, CreateAccount = true }, PlayFab_OnLoginSuccess, PlayFab_OnServerJoinFailure);
 		}
@@ -31,6 +35,7 @@ public class ClientPlayFabManager : Singleton<ClientPlayFabManager> {
 	}
 
 	private void PlayFab_OnMatchmakeSuccess(MatchmakeResult result) {
+		isJoining = false;
 		if (result.Status == MatchmakeStatus.Complete) {
 			clientNetworkManager.JoinServer(result.ServerHostname, result.Ticket);
 		} else if (result.Status == MatchmakeStatus.GameNotFound || result.Status == MatchmakeStatus.NoAvailableSlots) {
@@ -41,6 +46,7 @@ public class ClientPlayFabManager : Singleton<ClientPlayFabManager> {
 	}
 
 	private void PlayFab_OnServerJoinFailure(PlayFabError error) {
+		isJoining = false;
 		clientNetworkManager.OnJoinServerFailed("PlayFab: Error occurred: " + error.GenerateErrorReport());
 	}
 

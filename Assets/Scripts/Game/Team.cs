@@ -16,9 +16,10 @@ public class Team : IDarkRiftSerializable {
 		Players = new Dictionary<string, Player>();
 	}
 
-	public Team(ushort ID, string name) {
+	public Team(ushort ID, string name, Color color) {
 		this.ID = ID;
 		Name = name;
+		Color = color;
 		Score = 0;
 		Players = new Dictionary<string, Player>();
 	}

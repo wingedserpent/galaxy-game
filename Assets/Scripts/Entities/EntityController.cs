@@ -154,6 +154,12 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		State = AIState.MOVING;
 	}
 
+	public void Stop() {
+		AttackTarget = null;
+		agent.isStopped = true;
+		State = AIState.IDLE;
+	}
+
 	public void Attack(Entity attackTarget) {
 		if (attackTarget != null) {
 			AttackTarget = attackTarget;

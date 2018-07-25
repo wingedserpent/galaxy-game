@@ -28,7 +28,7 @@ public class ServerGameManager : Singleton<ServerGameManager> {
 		TeamSpawns = new Dictionary<ushort, TeamSpawn>();
 		foreach (TeamSpawn teamSpawn in FindObjectsOfType<TeamSpawn>()) {
 			TeamSpawns.Add(teamSpawn.teamId, teamSpawn);
-			GameState.Teams.Add(teamSpawn.teamId, new Team(teamSpawn.teamId, teamSpawn.teamName));
+			GameState.Teams.Add(teamSpawn.teamId, new Team(teamSpawn.teamId, teamSpawn.teamName, teamSpawn.teamColor));
 		}
 	}
 

@@ -10,15 +10,26 @@ public delegate void OnGameStateInitialized();
 
 public class ClientGameManager : Singleton<ClientGameManager> {
 
+	public ConnectionMenuController connectionMenuController;
 	public SquadMenuController squadMenuController;
-	public Text scoreDisplay; //TODO display team scores
+	public Text scoreDisplay;
 
+	public bool IsOfflineTest { get; private set; }
+	public GameStates ClientState { get; private set; }
 	public GameState GameState { get; private set; }
 	public Player MyPlayer { get; private set; }
 	public Dictionary<ushort, CapturePoint> CapturePoints { get; private set; }
 	public Dictionary<ushort, TeamSpawn> TeamSpawns { get; private set; }
 
+	protected override void Awake() {
+		base.Awake();
+		IsOfflineTest = false;
+		ClientState = GameStates.WAITING_FOR_PLAYERS;
+	}
+
 	private void Start() {
+		connectionMenuController.OpenMenu();
+
 		CapturePoints = new Dictionary<ushort, CapturePoint>();
 		foreach (CapturePoint capturePoint in FindObjectsOfType<CapturePoint>()) {
 			CapturePoints.Add(capturePoint.ID, capturePoint);
@@ -31,18 +42,13 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	}
 
 	public void UpdateGameState(GameState newGameState, bool hasSpawnedEntities = false) {
-		GameState originalGameState = GameState;
 		GameState = newGameState;
 		MyPlayer = GameState.GetPlayer(ClientPlayFabManager.Instance.PlayFabId);
 
-		if (originalGameState != null) {
-			if (originalGameState.CurrentState == GameStates.WAITING_FOR_PLAYERS && GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
-				StartGame(hasSpawnedEntities);
-			} else if (originalGameState.CurrentState == GameStates.GAME_IN_PROGRESS && GameState.CurrentState == GameStates.GAME_COMPLETED) {
-				EndGame();
-			}
-		} else if (GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
+		if (ClientState == GameStates.WAITING_FOR_PLAYERS && GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
 			StartGame(hasSpawnedEntities);
+		} else if (ClientState == GameStates.GAME_IN_PROGRESS && GameState.CurrentState == GameStates.GAME_COMPLETED) {
+			EndGame();
 		}
 
 		UpdateScoreDisplay();
@@ -52,9 +58,15 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 		if (!hasSpawnedEntities) {
 			squadMenuController.OpenMenu(MyPlayer.MaxSquadCost);
 		}
+		ClientState = GameStates.GAME_IN_PROGRESS;
+	}
+
+	public void StartOfflineTest() {
+		ClientState = GameStates.GAME_IN_PROGRESS;
 	}
 
 	public void EndGame() {
+		ClientState = GameStates.GAME_COMPLETED;
 		Debug.Log("Game Over!");
 
 		Invoke("RestartGame", 10f);

@@ -120,6 +120,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				if (controller != null) {
 					if (command.Type == CommandType.MOVE) {
 						controller.MoveTo(command.Point);
+					} else if (command.Type == CommandType.STOP) {
+						controller.Stop();
 					} else if (command.Type == CommandType.ATTACK) {
 						if (entities.ContainsKey(command.TargetEntityId)) {
 							controller.Attack(entities[command.TargetEntityId]);

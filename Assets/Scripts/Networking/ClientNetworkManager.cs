@@ -11,14 +11,13 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 
 	public UnityClient client;
 	public bool forceLocalhost = false;
-	public bool offlineTest = false;
-	
+
 	public delegate void OnServerJoinUpdate(string message);
-	public event OnServerJoinUpdate ServerJoinUpdate;
+	public event OnServerJoinUpdate ServerJoinUpdate = delegate { };
 	public delegate void OnServerJoinSuccess(string message);
-	public event OnServerJoinSuccess ServerJoinSuccess;
+	public event OnServerJoinSuccess ServerJoinSuccess = delegate { };
 	public delegate void OnServerJoinFailure(string message);
-	public event OnServerJoinFailure ServerJoinFailure;
+	public event OnServerJoinFailure ServerJoinFailure = delegate { };
 
 	public bool IsConnectedToServer { get; private set; } //have we connected to server and also validated matchmaking ticket?
 	private ClientGameManager clientGameManager;
@@ -125,11 +124,6 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 				}
 			}
 		}
-	}
-
-	private IEnumerator WaitForConnection(Func<bool> function) {
-		yield return new WaitUntil(() => IsConnectedToServer);
-		function();
 	}
 
 	public void SendCommand(Command command) {

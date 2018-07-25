@@ -72,7 +72,7 @@ public class PlayerInputManager : MonoBehaviour {
 				if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
 					//selection box is large enough, select entities inside
 					IEnumerable<Entity> entitiesToConsider;
-					if (clientNetworkManager.offlineTest) {
+					if (clientGameManager.IsOfflineTest) {
 						entitiesToConsider = FindObjectsOfType<Entity>();
 					} else {
 						entitiesToConsider = clientEntityManager.MySquad.Values;
@@ -91,7 +91,7 @@ public class PlayerInputManager : MonoBehaviour {
 					RaycastHit hit;
 					if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~ignoreLayers)) {
 						Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-						if (hitEntity != null && (clientNetworkManager.offlineTest || hitEntity.PlayerId == clientGameManager.MyPlayer.ID)) {
+						if (hitEntity != null && (clientGameManager.IsOfflineTest || hitEntity.PlayerId == clientGameManager.MyPlayer.ID)) {
 							if (!SelectedEntities.Contains(hitEntity)) {
 								SelectEntity(hitEntity);
 							} else if (isMultiselecting) {
@@ -108,13 +108,17 @@ public class PlayerInputManager : MonoBehaviour {
 
 				if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~ignoreLayers)) {
 					Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-					if (hitEntity != null && (clientNetworkManager.offlineTest || hitEntity.TeamId != clientGameManager.MyPlayer.TeamId)) {
+					if (hitEntity != null && (clientGameManager.IsOfflineTest || hitEntity.TeamId != clientGameManager.MyPlayer.TeamId)) {
 						IssueAttackCommand(SelectedEntities.Select(x => x.ID).ToList(), hitEntity.ID);
 					} else {
 						IssueMoveCommand(SelectedEntities.Select(x => x.ID).ToList(), hit.point);
 					}
 				}
 			}
+		}
+
+		if (Input.GetButtonDown("Stop")) {
+			IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
 		}
 
 		if (Input.anyKeyDown) {
@@ -177,6 +181,11 @@ public class PlayerInputManager : MonoBehaviour {
 		Command moveCommand = new Command(CommandType.MOVE, entityIds);
 		moveCommand.Point = target;
 		clientNetworkManager.SendCommand(moveCommand);
+	}
+
+	private void IssueStopCommand(List<string> entityIds) {
+		Command stopCommand = new Command(CommandType.STOP, entityIds);
+		clientNetworkManager.SendCommand(stopCommand);
 	}
 
 	private void IssueAttackCommand(List<string> entityIds, string targetEntityId) {

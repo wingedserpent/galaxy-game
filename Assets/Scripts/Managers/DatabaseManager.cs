@@ -50,7 +50,8 @@ public static class DatabaseManager {
 				"FROM player_unit pu " +
 				"INNER JOIN player p ON p.player_id = pu.player_id " +
 				"INNER JOIN unit_type u ON u.unit_type_id = pu.unit_type_id " +
-				"WHERE p.external_id = @externalPlayerId";
+				"WHERE p.external_id = @externalPlayerId " +
+				"ORDER BY pu.player_unit_id ASC";
 			MySqlCommand command = new MySqlCommand(sql, connection);
 			command.Parameters.AddWithValue("externalPlayerId", externalPlayerId);
 			MySqlDataReader reader = command.ExecuteReader();

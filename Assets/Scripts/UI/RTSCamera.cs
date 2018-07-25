@@ -321,7 +321,7 @@ namespace RTSCam
 		/// </summary>
 		private void RotationOrbit() {
 			if (useKeyboardRotation)
-				transform.RotateAround(FollowingTarget ? targetToFollow.position : GetForwardGroundPos(), Vector3.up, RotationDirection * Time.deltaTime * rotationSpeed);
+				transform.RotateAround(FollowingTarget ? targetToFollow.position : GetForwardGroundPos(), Vector3.up, -RotationDirection * Time.deltaTime * rotationSpeed);
 
 			if (useMouseRotation && Input.GetKey(mouseRotationKey))
 				m_Transform.RotateAround(FollowingTarget ? targetToFollow.position : GetForwardGroundPos(), Vector3.up, -MouseAxis.x * Time.deltaTime * mouseRotationSpeed);

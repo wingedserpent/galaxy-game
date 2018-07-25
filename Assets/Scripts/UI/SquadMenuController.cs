@@ -22,7 +22,8 @@ public class SquadMenuController : MonoBehaviour {
 		if (maxSquadCost > 0) {
 			MaxSquadCost = maxSquadCost;
 		}
-		unitListContainer.gameObject.SetActive(true);
+
+		gameObject.SetActive(true);
 	}
 
 	private void Awake() {
@@ -34,7 +35,8 @@ public class SquadMenuController : MonoBehaviour {
 		allUnitSelectors.Clear();
 		selectedUnits.Clear();
 		UpdateSquadCost(0);
-		unitListContainer.gameObject.SetActive(false);
+
+		gameObject.SetActive(false);
 	}
 
 	private void OnEnable() {
