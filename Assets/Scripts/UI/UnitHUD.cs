@@ -23,19 +23,28 @@ public class UnitHUD : MonoBehaviour {
 		}
 	}
 
+	private void OnEnable() {
+		UpdateRendering(); //call this immediately otherwise the hud can appear incorrectly for one frame
+	}
+
 	private void Update() {
-		float distance = Vector3.Distance(Camera.main.transform.position, Entity.transform.position);
-
-		//add to y pos based on distance
-		Vector3 newPos = Camera.main.WorldToScreenPoint(Entity.transform.position);
-		newPos.y += (yPosRatio / distance);
-		rectTransform.position = newPos;
-
-		//scale based on distance
-		float scalingFactor = (scalingRatio / distance);
-		rectTransform.localScale = new Vector3(scalingFactor, scalingFactor, scalingFactor);
-
+		UpdateRendering();
 		UpdateHealthBar();
+	}
+
+	private void UpdateRendering() {
+		if (Entity != null) {
+			float distance = Vector3.Distance(Camera.main.transform.position, Entity.transform.position);
+
+			//add to y pos based on distance
+			Vector3 newPos = Camera.main.WorldToScreenPoint(Entity.transform.position);
+			newPos.y += (yPosRatio / distance);
+			rectTransform.position = newPos;
+
+			//scale based on distance
+			float scalingFactor = (scalingRatio / distance);
+			rectTransform.localScale = new Vector3(scalingFactor, scalingFactor, scalingFactor);
+		}
 	}
 
 	private void UpdateHealthBar() {

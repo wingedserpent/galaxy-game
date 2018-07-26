@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.AI;
 
 public class ClientEntityManager : Singleton<ClientEntityManager> {
 	
@@ -80,6 +81,9 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 				Destroy(child.gameObject);
 			}
 		}
+
+		//disable nav mesh agents since they can cause "jiggling" on the client screen
+		entity.GetComponent<NavMeshAgent>().enabled = false;
 	}
 
 	public void HandleEntityDeath(string entityId) {

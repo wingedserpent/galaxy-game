@@ -23,11 +23,7 @@ public class SquadMenuController : MonoBehaviour {
 			MaxSquadCost = maxSquadCost;
 		}
 
-		gameObject.SetActive(true);
-	}
-
-	private void Awake() {
-		UpdateSquadCost(0);
+		ClientNetworkManager.Instance.RequestUnitList();
 	}
 
 	private void CloseMenu() {
@@ -39,11 +35,9 @@ public class SquadMenuController : MonoBehaviour {
 		gameObject.SetActive(false);
 	}
 
-	private void OnEnable() {
-		ClientNetworkManager.Instance.RequestUnitList();
-	}
-
 	public void OnUnitListReceived(List<PlayerUnit> playerUnits) {
+		gameObject.SetActive(true);
+
 		foreach (PlayerUnit playerUnit in playerUnits) {
 			UnitSelector unitSelector = Instantiate<GameObject>(unitSelectorPrefab.gameObject, unitListContainer).GetComponent<UnitSelector>();
 			unitSelector.SquadMenuController = this;

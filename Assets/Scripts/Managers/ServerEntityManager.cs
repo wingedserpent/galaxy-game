@@ -104,6 +104,11 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		foreach (Animator animator in entity.GetComponentsInChildren<Animator>()) {
 			Destroy(animator);
 		}
+
+		//destroy any remaining audio sources
+		foreach (AudioSource audioSource in entity.GetComponents<AudioSource>()) {
+			Destroy(audioSource);
+		}
 	}
 
 	public void HandleCommand(Command command, string sourcePlayerId) {
@@ -114,12 +119,21 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 			}
 		}
 
+		Vector3? groupMovementCenter = null;
+		if (command.Type == CommandType.MOVE && actingEntities.Count > 1) {
+			groupMovementCenter = Vector3.zero;
+			foreach (Entity entity in actingEntities) {
+				groupMovementCenter += entity.transform.position;
+			}
+			groupMovementCenter = groupMovementCenter / actingEntities.Count;
+		}
+
 		foreach (Entity entity in actingEntities) {
 			if (entity.PlayerId.Equals(sourcePlayerId)) {
 				EntityController controller = entity.GetComponent<EntityController>();
 				if (controller != null) {
 					if (command.Type == CommandType.MOVE) {
-						controller.MoveTo(command.Point);
+						controller.MoveTo(command.Point, groupMovementCenter);
 					} else if (command.Type == CommandType.STOP) {
 						controller.Stop();
 					} else if (command.Type == CommandType.ATTACK) {

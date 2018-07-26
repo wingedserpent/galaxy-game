@@ -37,6 +37,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	private Entity entity;
 	private NavMeshAgent agent;
+	private NavMeshObstacle obstacle;
 	private Vision vision;
 	private Animator animator;
 	private AudioSource audioSource;
@@ -45,6 +46,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected virtual void Awake() {
 		entity = GetComponent<Entity>();
 		agent = GetComponent<NavMeshAgent>();
+		obstacle = GetComponent<NavMeshObstacle>();
 		vision = GetComponentInChildren<Vision>();
 		animator = GetComponent<Animator>();
 		audioSource = GetComponent<AudioSource>();
@@ -107,6 +109,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		if (!agent.pathPending) {
 			if (agent.remainingDistance <= agent.stoppingDistance) {
 				if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f) {
+					DisableMovement();
 					State = AIState.IDLE;
 				}
 			}
@@ -118,7 +121,11 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			//target disappeared or died
 			State = AIState.IDLE;
 		} else {
-			transform.LookAt(AttackTarget.transform);
+			//look at target's x/z position
+			Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
+									   transform.position.y,
+									   AttackTarget.transform.position.z);
+			transform.LookAt(lookTarget);
 
 			if (attackCooldown <= 0f) {
 				if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.properties.attackRange) {
@@ -147,23 +154,53 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				select target).FirstOrDefault();
 	}
 
-	public void MoveTo(Vector3 target) {
+	public void MoveTo(Vector3 target, Vector3? groupMovementCenter = null) {
 		AttackTarget = null;
-		agent.destination = target;
-		agent.isStopped = false;
+		EnableMovement();
+		agent.destination = FindMovementDestination(target, groupMovementCenter);
 		State = AIState.MOVING;
+	}
+
+	private void EnableMovement() {
+		obstacle.enabled = false;
+		agent.enabled = true;
+		agent.isStopped = false;
+	}
+
+	private Vector3 FindMovementDestination(Vector3 target, Vector3? groupMovementCenter = null) {
+		Vector3 destination = target;
+
+		if (groupMovementCenter != null) {
+			//maintain an offset from the center of the group if using group movement
+			destination += (transform.position - (Vector3)groupMovementCenter).normalized * agent.radius * 2;
+		}
+
+		NavMeshHit navMeshHit;
+		if (NavMesh.SamplePosition(destination, out navMeshHit, 1f, NavMesh.AllAreas)) {
+			return navMeshHit.position;
+		}
+
+		return destination;
 	}
 
 	public void Stop() {
 		AttackTarget = null;
-		agent.isStopped = true;
+		DisableMovement();
 		State = AIState.IDLE;
+	}
+
+	private void DisableMovement() {
+		if (agent.enabled) {
+			agent.isStopped = true;
+			agent.enabled = false;
+			obstacle.enabled = true;
+		}
 	}
 
 	public void Attack(Entity attackTarget) {
 		if (attackTarget != null) {
 			AttackTarget = attackTarget;
-			agent.isStopped = true;
+			DisableMovement();
 			State = AIState.ATTACKING;
 		}
 	}
