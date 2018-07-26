@@ -69,6 +69,8 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 
 	private void ScrubEntity(Entity entity) {
 		if (entity.TeamId == clientGameManager.MyPlayer.TeamId) {
+			//immediately send visibility=false update
+			entity.EntityController.VisibilityTargetDispatch(null);
 			//disable visibility updates for teammates since they will always be visible
 			entity.EntityController.UpdateVisibility = false;
 		}

@@ -133,7 +133,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				EntityController controller = entity.GetComponent<EntityController>();
 				if (controller != null) {
 					if (command.Type == CommandType.MOVE) {
-						controller.MoveTo(command.Point, groupMovementCenter);
+						controller.Move(command.Point, groupMovementCenter);
 					} else if (command.Type == CommandType.STOP) {
 						controller.Stop();
 					} else if (command.Type == CommandType.ATTACK) {

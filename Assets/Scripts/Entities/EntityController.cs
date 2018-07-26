@@ -34,6 +34,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	private float attackCooldown = 0f;
 	private bool isQuitting = false;
+	private bool isRespondingToAttackCommand = false;
+	private Vector3 lastMoveDestination = Vector3.zero;
 
 	private Entity entity;
 	private NavMeshAgent agent;
@@ -89,27 +91,30 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	private void HandleIdleState() {
+		isRespondingToAttackCommand = false;
+
 		AttackTarget = CheckForTargets();
 		if (AttackTarget != null) {
 			State = AIState.ATTACKING;
-			//HandleCombatState(); call immediately or wait a frame?
 		}
 	}
 
+	private Entity CheckForTargets() {
+		return (from target in vision.VisibleTargets.Where(x => x != null)
+				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
+				where target.TeamId != entity.TeamId && distance <= entity.properties.attackRange
+				orderby distance descending
+				select target).FirstOrDefault();
+	}
+
 	private void HandleMovingState() {
-		/* for now, can't attack if moving
-		attackTarget = CheckForTargets();
-		if (attackTarget != null) {
-			Stop();
-			State = AIState.COMBAT;
-			HandleCombatState();
-		} */
+		isRespondingToAttackCommand = false;
 
 		// Check if we've reached the destination
-		if (!agent.pathPending) {
+		if (agent.enabled && !agent.pathPending) {
 			if (agent.remainingDistance <= agent.stoppingDistance) {
 				if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f) {
-					DisableMovement();
+					StopMovement();
 					State = AIState.IDLE;
 				}
 			}
@@ -117,9 +122,9 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	private void HandleCombatState() {
-		if (AttackTarget == null) {
+		if (AttackTarget == null || !AttackTarget.GetComponent<EntityController>().isVisible) {
 			//target disappeared or died
-			State = AIState.IDLE;
+			Stop();
 		} else {
 			//look at target's x/z position
 			Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
@@ -127,12 +132,16 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 									   AttackTarget.transform.position.z);
 			transform.LookAt(lookTarget);
 
-			if (attackCooldown <= 0f) {
-				if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.properties.attackRange) {
-					//out of range
-					AttackTarget = null;
-					State = AIState.IDLE;
-				} else {
+			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.properties.attackRange) {
+				//out of range, move into range if responding to an explicit attack command
+				if (isRespondingToAttackCommand) {
+					SetMoveDestination(FindTrueMoveDestination(AttackTarget.transform.position));
+				}
+			} else {
+				//in range, stop moving
+				StopMovement();
+
+				if (attackCooldown <= 0f) {
 					//do the attack
 					bool targetDied = AttackTarget.GetComponent<EntityController>().TakeDamage(entity.properties.attackDamage);
 					if (targetDied) {
@@ -146,33 +155,34 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	private Entity CheckForTargets() {
-		return (from target in vision.VisibleTargets.Where(x => x != null)
-				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
-				where target.TeamId != entity.TeamId && distance <= entity.properties.attackRange
-				orderby distance descending
-				select target).FirstOrDefault();
-	}
-
-	public void MoveTo(Vector3 target, Vector3? groupMovementCenter = null) {
+	public void Move(Vector3 target, Vector3? groupMovementCenter = null) {
 		AttackTarget = null;
-		EnableMovement();
-		agent.destination = FindMovementDestination(target, groupMovementCenter);
-		State = AIState.MOVING;
+		if (SetMoveDestination(FindTrueMoveDestination(target, groupMovementCenter))) {
+			State = AIState.MOVING;
+		}
 	}
 
-	private void EnableMovement() {
-		obstacle.enabled = false;
-		agent.enabled = true;
-		agent.isStopped = false;
+	public void Stop() {
+		AttackTarget = null;
+		StopMovement();
+		State = AIState.IDLE;
 	}
 
-	private Vector3 FindMovementDestination(Vector3 target, Vector3? groupMovementCenter = null) {
+	public void Attack(Entity attackTarget) {
+		if (attackTarget != null) {
+			isRespondingToAttackCommand = true;
+			AttackTarget = attackTarget;
+			StopMovement();
+			State = AIState.ATTACKING;
+		}
+	}
+
+	private Vector3 FindTrueMoveDestination(Vector3 target, Vector3? groupMovementCenter = null) {
 		Vector3 destination = target;
 
 		if (groupMovementCenter != null) {
 			//maintain an offset from the center of the group if using group movement
-			destination += (transform.position - (Vector3)groupMovementCenter).normalized * agent.radius * 2;
+			destination += (transform.position - (Vector3)groupMovementCenter).normalized * agent.radius * 3;
 		}
 
 		NavMeshHit navMeshHit;
@@ -183,25 +193,32 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		return destination;
 	}
 
-	public void Stop() {
-		AttackTarget = null;
-		DisableMovement();
-		State = AIState.IDLE;
+	private bool SetMoveDestination(Vector3 destination) {
+		if (agent.destination != destination) {
+			StartCoroutine(DelayedMove(destination));
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	private void DisableMovement() {
+	private IEnumerator DelayedMove(Vector3 destination) {
+		if (obstacle.enabled) {
+			obstacle.enabled = false;
+			yield return 1; //wait one frame before moving to let the nav mesh update
+		}
+
+		agent.enabled = true;
+		agent.destination = destination;
+		agent.isStopped = false;
+		lastMoveDestination = destination;
+	}
+
+	private void StopMovement() {
 		if (agent.enabled) {
 			agent.isStopped = true;
 			agent.enabled = false;
 			obstacle.enabled = true;
-		}
-	}
-
-	public void Attack(Entity attackTarget) {
-		if (attackTarget != null) {
-			AttackTarget = attackTarget;
-			DisableMovement();
-			State = AIState.ATTACKING;
 		}
 	}
 
@@ -241,12 +258,16 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	private void VisibilityTargetDispatch(ICollection<Entity> targets) {
+	public void VisibilityTargetDispatch(ICollection<Entity> targets) {
 		if (UpdateVisibility) {
-			bool isVisibleNow = targets.Contains(entity);
-			if (isVisibleNow != isVisible) {
-				isVisible = isVisibleNow;
-				OnVisibilityUpdated(isVisible);
+			if (targets != null) {
+				bool isVisibleNow = targets.Contains(entity);
+				if (isVisibleNow != isVisible) {
+					isVisible = isVisibleNow;
+					OnVisibilityUpdated(isVisible);
+				}
+			} else {
+				OnVisibilityUpdated(false);
 			}
 		}
 	}
