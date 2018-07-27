@@ -62,6 +62,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	}
 
 	public void StartOfflineTest() {
+		IsOfflineTest = true;
 		ClientState = GameStates.GAME_IN_PROGRESS;
 	}
 

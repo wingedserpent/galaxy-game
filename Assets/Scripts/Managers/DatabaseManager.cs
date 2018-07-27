@@ -59,7 +59,7 @@ public static class DatabaseManager {
 			while (reader.Read()) {
 				PlayerUnit playerUnit = new PlayerUnit();
 				playerUnit.PlayerId = reader.GetString("external_id");
-				playerUnit.UnitId = reader.GetInt32("player_unit_id");
+				playerUnit.PlayerUnitId = reader.GetInt32("player_unit_id");
 				playerUnit.UnitType = reader.GetString("unit_type");
 				playerUnit.UnitName = reader.GetString("unit_display_name");
 				playerUnit.SquadCost = reader.GetInt32("squad_cost");

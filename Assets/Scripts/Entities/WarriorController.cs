@@ -5,20 +5,21 @@ using UnityEngine.AI;
 using System.Linq;
 using DarkRift;
 
-public class WarriorController : EntityController {
+public class WarriorController : UnitController {
 
 	public KeyCode shieldKey;
 	public GameObject shieldGameObject;
 	public float shieldActiveTime;
 	public float shieldCooldown;
 
-	private bool isShieldActive = false;
-	private float shieldActiveTimer = 0f;
-	private float shieldCooldownTimer = 0f;
-	private MeshRenderer shieldRenderer;
+	protected bool isShieldActive = false;
+	protected float shieldActiveTimer = 0f;
+	protected float shieldCooldownTimer = 0f;
+	protected MeshRenderer shieldRenderer;
 
 	protected override void Awake() {
 		base.Awake();
+
 		shieldRenderer = shieldGameObject.GetComponent<MeshRenderer>();
 	}
 
@@ -30,7 +31,7 @@ public class WarriorController : EntityController {
 				DeactivateShield();
 			} else if (shieldActiveTimer <= 4f) {
 				if (!LeanTween.isTweening(shieldGameObject)) {
-					LeanTween.value(shieldGameObject, ShieldBlinkEFfectUpdate, 1f, 0f, shieldActiveTimer).setEaseOutBounce();
+					LeanTween.value(shieldGameObject, ShieldBlinkEffectUpdate, 1f, 0f, shieldActiveTimer).setEaseOutBounce();
 				}
 			}
 		} else if (shieldCooldownTimer >= 0f) {
@@ -62,7 +63,7 @@ public class WarriorController : EntityController {
 		}
 	}
 
-	private void DeactivateShield() {
+	protected void DeactivateShield() {
 		shieldRenderer.enabled = true;
 		shieldGameObject.SetActive(false);
 		shieldCooldownTimer = shieldCooldown;
@@ -76,12 +77,13 @@ public class WarriorController : EntityController {
 		return false;
 	}
 
-	private void ShieldBlinkEFfectUpdate(float value) {
+	protected void ShieldBlinkEffectUpdate(float value) {
 		shieldRenderer.enabled = (value >= 0.03f);
 	}
 
 	public override void Deserialize(DeserializeEvent e) {
 		base.Deserialize(e);
+
 		bool shieldActive = e.Reader.ReadBoolean();
 		if (shieldActive != isShieldActive) {
 			if (shieldActive) {
@@ -94,6 +96,7 @@ public class WarriorController : EntityController {
 
 	public override void Serialize(SerializeEvent e) {
 		base.Serialize(e);
+
 		e.Writer.Write(isShieldActive);
 	}
 }

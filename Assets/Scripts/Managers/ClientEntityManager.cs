@@ -91,10 +91,7 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public void HandleEntityDeath(string entityId) {
 		if (entities.ContainsKey(entityId)) {
 			Entity entity = entities[entityId];
-			EntityController controller = entity.GetComponent<EntityController>();
-			if (controller != null) {
-				controller.Die();
-			}
+			entity.EntityController.Die();
 
 			DestroyEntity(entity.ID, 1f);
 		}

@@ -10,7 +10,7 @@ using DarkRift;
 public class PlayerUnit : IDarkRiftSerializable {
 
 	public string PlayerId { get; set; }
-	public int UnitId { get; set; }
+	public int PlayerUnitId { get; set; }
 	public string UnitType { get; set; }
 	public string UnitName { get; set; }
 	public int SquadCost { get; set; }
@@ -19,7 +19,7 @@ public class PlayerUnit : IDarkRiftSerializable {
 
 	public void Deserialize(DeserializeEvent e) {
 		PlayerId = e.Reader.ReadString();
-		UnitId = e.Reader.ReadInt32();
+		PlayerUnitId = e.Reader.ReadInt32();
 		UnitType = e.Reader.ReadString();
 		UnitName = e.Reader.ReadString();
 		SquadCost = e.Reader.ReadInt32();
@@ -29,7 +29,7 @@ public class PlayerUnit : IDarkRiftSerializable {
 
 	public void Serialize(SerializeEvent e) {
 		e.Writer.Write(PlayerId);
-		e.Writer.Write(UnitId);
+		e.Writer.Write(PlayerUnitId);
 		e.Writer.Write(UnitType);
 		e.Writer.Write(UnitName);
 		e.Writer.Write(SquadCost);

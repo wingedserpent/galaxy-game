@@ -259,9 +259,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4004239934962110}
-  - component: {fileID: 114467327520175200}
   - component: {fileID: 195606754113236858}
   - component: {fileID: 208366057788479048}
+  - component: {fileID: 114231282300609478}
   - component: {fileID: 114194201512946914}
   m_Layer: 0
   m_Name: Car
@@ -1284,8 +1284,9 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: f433dd47bae4e4db5a0518044da14a8d, type: 3}
   damagedSound: {fileID: 0}
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
-  unitHUDPrefab: {fileID: 0}
---- !u!114 &114467327520175200
+  unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
+    type: 2}
+--- !u!114 &114231282300609478
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -1293,16 +1294,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1696362559385434}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c86f3cd7534c5664b8eb2e9df97e5161, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c0706fc5eb72284fb5bcca0d10d245b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: car
-  properties:
-    currentHealth: 100
-    maxHealth: 100
-    attackRange: 10
-    attackSpeed: 1.5
-    attackDamage: 4
+  currentHealth: 100
+  maxHealth: 100
+  attackRange: 10
+  attackSpeed: 1.5
+  attackDamage: 4
 --- !u!114 &114681669923108360
 MonoBehaviour:
   m_ObjectHideFlags: 1

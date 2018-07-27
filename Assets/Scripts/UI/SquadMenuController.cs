@@ -42,7 +42,7 @@ public class SquadMenuController : MonoBehaviour {
 			UnitSelector unitSelector = Instantiate<GameObject>(unitSelectorPrefab.gameObject, unitListContainer).GetComponent<UnitSelector>();
 			unitSelector.SquadMenuController = this;
 			unitSelector.UnitName = playerUnit.UnitName;
-			unitSelector.UnitId = playerUnit.UnitId;
+			unitSelector.UnitId = playerUnit.PlayerUnitId;
 			unitSelector.SquadCost = playerUnit.SquadCost;
 			allUnitSelectors.Add(unitSelector);
 		}

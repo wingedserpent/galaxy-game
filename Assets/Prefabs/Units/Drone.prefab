@@ -125,8 +125,8 @@ GameObject:
   - component: {fileID: 82656268441374302}
   - component: {fileID: 195513152373330904}
   - component: {fileID: 208767671803596138}
-  - component: {fileID: 114145378234858432}
-  - component: {fileID: 114499726753603044}
+  - component: {fileID: 114403446751357546}
+  - component: {fileID: 114765806378823428}
   m_Layer: 0
   m_Name: Drone
   m_TagString: Untagged
@@ -797,7 +797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114145378234858432
+--- !u!114 &114403446751357546
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -805,35 +805,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1773401138976614}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c86f3cd7534c5664b8eb2e9df97e5161, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c0706fc5eb72284fb5bcca0d10d245b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: drone
-  properties:
-    currentHealth: 40
-    maxHealth: 40
-    attackRange: 10
-    attackSpeed: 1.5
-    attackDamage: 2
---- !u!114 &114499726753603044
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1773401138976614}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb67169e6d54f264ea21682dc87373ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
-    type: 2}
-  deathEffectPrefab: {fileID: 100010, guid: 645413a00f7bd0242bbd6d0e5eb6f439, type: 2}
-  attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
-  damagedSound: {fileID: 0}
-  deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
-  unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
-    type: 2}
+  currentHealth: 40
+  maxHealth: 40
+  attackRange: 10
+  attackSpeed: 1.5
+  attackDamage: 2
 --- !u!114 &114524392902342580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -856,6 +836,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68bd71b49c8353244abacd17f0abf512, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114765806378823428
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1773401138976614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 402f71065a761f24193ec9c21b85e833, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+    type: 2}
+  deathEffectPrefab: {fileID: 100010, guid: 645413a00f7bd0242bbd6d0e5eb6f439, type: 2}
+  attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
+  damagedSound: {fileID: 0}
+  deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
+  unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
+    type: 2}
 --- !u!114 &114881400193497414
 MonoBehaviour:
   m_ObjectHideFlags: 1

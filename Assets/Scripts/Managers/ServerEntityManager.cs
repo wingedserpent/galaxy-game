@@ -46,10 +46,10 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	public void SpawnPlayerSquad(Player player, List<PlayerUnit> playerUnits) {
 		Vector3 spawnPos = serverGameManager.TeamSpawns[player.TeamId].transform.position;
 		foreach (PlayerUnit playerUnit in playerUnits) {
-			Entity newEntity = entityDatabase.GetEntityInstance(playerUnit.UnitType, spawnPos, Quaternion.identity);
-			newEntity.SetPlayer(player);
-			newEntity.PlayerUnitId = playerUnit.UnitId;
-			RegisterEntity(newEntity);
+			Unit newUnit = (Unit)entityDatabase.GetEntityInstance(playerUnit.UnitType, spawnPos, Quaternion.identity);
+			newUnit.SetPlayer(player);
+			newUnit.PlayerUnitId = playerUnit.PlayerUnitId;
+			RegisterEntity(newUnit);
 		}
 	}
 
@@ -130,33 +130,27 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 		foreach (Entity entity in actingEntities) {
 			if (entity.PlayerId.Equals(sourcePlayerId)) {
-				EntityController controller = entity.GetComponent<EntityController>();
-				if (controller != null) {
-					if (command.Type == CommandType.MOVE) {
-						controller.Move(command.Point, groupMovementCenter);
-					} else if (command.Type == CommandType.STOP) {
-						controller.Stop();
-					} else if (command.Type == CommandType.ATTACK) {
-						if (entities.ContainsKey(command.TargetEntityId)) {
-							controller.Attack(entities[command.TargetEntityId]);
-						}
-					} else {
-						controller.ExecuteCommand(CommandType.ABILITY_SHIELD);
+				if (command.Type == CommandType.MOVE && entity.EntityController is UnitController) {
+					(entity.EntityController as UnitController).Move(command.Point, groupMovementCenter);
+				} else if (command.Type == CommandType.STOP) {
+					entity.EntityController.Stop();
+				} else if (command.Type == CommandType.ATTACK) {
+					if (entities.ContainsKey(command.TargetEntityId)) {
+						entity.EntityController.Attack(entities[command.TargetEntityId]);
 					}
+				} else {
+					entity.EntityController.ExecuteCommand(command.Type);
 				}
 			}
 		}
 	}
 
 	public void HandleEntityDeath(Entity entity) {
-		EntityController controller = entity.GetComponent<EntityController>();
-		if (controller != null) {
-			controller.Die();
-		}
+		entity.EntityController.Die();
 		
 		if (playerUnits.ContainsKey(entity.PlayerId)) {
 			PlayerUnit playerUnit = (from pu in playerUnits[entity.PlayerId]
-									 where pu.UnitId == entity.PlayerUnitId
+									 where pu.PlayerUnitId == (entity as Unit).PlayerUnitId
 									 select pu).FirstOrDefault();
 			if (playerUnit != null) {
 				playerUnit.CurrentHealth = 0;

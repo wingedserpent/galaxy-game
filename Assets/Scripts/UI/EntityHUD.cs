@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UnitHUD : MonoBehaviour {
+public class EntityHUD : MonoBehaviour {
 
 	public PercentageBar healthBar;
 	public bool hideBarsWhenFull = false;
@@ -48,7 +48,7 @@ public class UnitHUD : MonoBehaviour {
 	}
 
 	private void UpdateHealthBar() {
-		healthBar.SetDisplayAmounts(Entity.properties.currentHealth, Entity.properties.maxHealth);
-		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.properties.currentHealth < Entity.properties.maxHealth);
+		healthBar.SetDisplayAmounts(Entity.currentHealth, Entity.maxHealth);
+		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.currentHealth < Entity.maxHealth);
 	}
 }
