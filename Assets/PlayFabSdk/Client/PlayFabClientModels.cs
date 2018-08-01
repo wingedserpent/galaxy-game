@@ -3675,17 +3675,6 @@ namespace PlayFab.ClientModels
         public string VirtualCurrency;
     }
 
-    /// <summary>
-    /// Identifier by either name or ID. Note that a name may change due to renaming, or reused after being deleted. ID is
-    /// immutable and unique.
-    /// </summary>
-    [Serializable]
-    public class NameIdentifier
-    {
-        public string Id;
-        public string Name;
-    }
-
     [Serializable]
     public class OpenTradeRequest : PlayFabRequestCommon
     {
@@ -4450,7 +4439,9 @@ namespace PlayFab.ClientModels
         BackEnd,
         GameClient,
         GameServer,
-        Partner
+        Partner,
+        Custom,
+        API
     }
 
     [Serializable]
@@ -5444,6 +5435,10 @@ namespace PlayFab.ClientModels
         /// Boolean for whether this player is eligible for gathering device info.
         /// </summary>
         public bool GatherDeviceInfo;
+        /// <summary>
+        /// Boolean for whether this player should report OnFocus play-time tracking.
+        /// </summary>
+        public bool GatherFocusInfo;
         /// <summary>
         /// Boolean for whether this player is eligible for ad tracking.
         /// </summary>

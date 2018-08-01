@@ -10,18 +10,14 @@ public delegate void OnVisibilityUpdated(bool isVisible);
 
 public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
-	public GameObject projectilePrefab;
 	public GameObject deathEffectPrefab;
 
-	public AudioClip attackSound;
 	public AudioClip damagedSound;
 	public AudioClip deathSound;
 
 	public EntityHUD unitHUDPrefab;
-
+	
 	public AIState State { get; set; }
-	public Entity AttackTarget { get; set; }
-	public bool AttackTrigger { get; set; }
 	public bool DamagedTrigger { get; set; }
 	public bool UpdateVisibility { get; set; }
 	public bool IsVisible { get; private set; }
@@ -31,9 +27,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	public event OnVisibilityUpdated OnVisibilityUpdated = delegate { };
 
-	protected float attackCooldown = 0f;
 	protected bool isQuitting = false;
-	protected bool isRespondingToAttackCommand = false;
 
 	protected Entity entity;
 	protected Vision vision;
@@ -48,13 +42,12 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		audioSource = GetComponent<AudioSource>();
 
 		State = AIState.IDLE;
-		AttackTrigger = false;
 		DamagedTrigger = false;
 		UpdateVisibility = true;
 		IsVisible = true;
 	}
 
-	protected void Start() {
+	protected virtual void Start() {
 		clientEntityManager = ClientEntityManager.Instance;
 		
 		VisibilityManager.VisibilityTargetDispatch += VisibilityTargetDispatch;
@@ -67,10 +60,6 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	protected virtual void Update() {
 		if (NetworkStatus.Instance.IsServer) {
-			if (attackCooldown > 0f) {
-				attackCooldown -= Time.deltaTime;
-			}
-
 			HandleAIStates();
 		} else {
 			UpdateEffects();
@@ -81,70 +70,23 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		if (State == AIState.IDLE) {
 			HandleIdleState();
 			return;
-		} else if (State == AIState.ATTACKING) {
-			HandleCombatState();
-			return;
 		}
 	}
 
-	protected void HandleIdleState() {
-		isRespondingToAttackCommand = false;
-
-		AttackTarget = CheckForTargets();
-		if (AttackTarget != null) {
-			State = AIState.ATTACKING;
-		}
+	protected virtual void HandleIdleState() {
+		//do nothing
 	}
 
-	protected Entity CheckForTargets() {
-		return (from target in vision.VisibleTargets.Where(x => x != null)
-				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
-				where target.TeamId != entity.TeamId && distance <= entity.attackRange
-				orderby distance descending
-				select target).FirstOrDefault();
-	}
-
-	protected virtual void HandleCombatState() {
-		if (AttackTarget == null || !AttackTarget.EntityController.IsVisible) {
-			//target disappeared or died
-			Stop();
-		} else {
-			//look at target's x/z position
-			Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
-									   transform.position.y,
-									   AttackTarget.transform.position.z);
-			transform.LookAt(lookTarget);
-
-			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.attackRange) {
-				//out of range, give up
-				AttackTarget = null;
-				State = AIState.IDLE;
-			} else {
-				if (attackCooldown <= 0f) {
-					//do the attack
-					bool targetDied = AttackTarget.EntityController.TakeDamage(entity.attackDamage);
-					if (targetDied) {
-						AttackTarget = null;
-						State = AIState.IDLE;
-					}
-					attackCooldown = entity.attackSpeed;
-					AttackTrigger = true;
-				}
-			}
-		}
+	public virtual void Move(Vector3 target, Vector3? groupMovementCenter = null) {
+		//do nothing
 	}
 
 	public virtual void Stop() {
-		AttackTarget = null;
 		State = AIState.IDLE;
 	}
 
 	public virtual void Attack(Entity attackTarget) {
-		if (attackTarget != null) {
-			isRespondingToAttackCommand = true;
-			AttackTarget = attackTarget;
-			State = AIState.ATTACKING;
-		}
+		//do nothing
 	}
 
 	public virtual bool TakeDamage(int amount) {
@@ -192,26 +134,13 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 					OnVisibilityUpdated(IsVisible);
 				}
 			} else {
+				IsVisible = false;
 				OnVisibilityUpdated(false);
 			}
 		}
 	}
 
 	protected virtual void UpdateEffects() {
-		if (AttackTrigger) {
-			if (animator != null) {
-				animator.SetTrigger("attack");
-			}
-			if (audioSource != null) {
-				audioSource.PlayOneShot(attackSound);
-			}
-			if (projectilePrefab != null) {
-				Projectile projectile = Instantiate<GameObject>(projectilePrefab.gameObject, transform.position, transform.rotation).GetComponent<Projectile>();
-				projectile.target = AttackTarget.transform;
-			}
-			AttackTrigger = false;
-		}
-
 		if (DamagedTrigger) {
 			if (animator != null) {
 				animator.SetTrigger("damaged");
@@ -237,21 +166,13 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	public virtual void Deserialize(DeserializeEvent e) {
 		State = (AIState)e.Reader.ReadInt32();
-		AttackTrigger = e.Reader.ReadBoolean();
 		DamagedTrigger = e.Reader.ReadBoolean();
-		string attackTargetId = e.Reader.ReadString();
-		if (attackTargetId != "") {
-			AttackTarget = clientEntityManager.GetEntity(attackTargetId);
-		}
 	}
 
 	public virtual void Serialize(SerializeEvent e) {
 		e.Writer.Write((int)State);
-		e.Writer.Write(AttackTrigger);
 		e.Writer.Write(DamagedTrigger);
-		e.Writer.Write(AttackTarget != null ? AttackTarget.ID : "");
-
-		AttackTrigger = false;
+		
 		DamagedTrigger = false;
 	}
 }

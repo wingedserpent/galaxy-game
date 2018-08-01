@@ -6,14 +6,21 @@ using UnityEngine;
 [CreateAssetMenu()]
 public class EntityDatabase : ScriptableObject {
 	
-	public List<Entity> entities;
+	public List<Unit> units;
+	public List<Structure> structures;
 
 	private Dictionary<string, Entity> entityMap;
 
 	private Entity GetEntityReference(string typeId) {
 		if (entityMap == null) {
 			entityMap = new Dictionary<string, Entity>();
-			foreach (Entity entity in entities) {
+			foreach (Entity entity in units) {
+				if (entityMap.ContainsKey(entity.typeId)) {
+					throw new System.Exception("Multiple entites have the same ID: " + entity.typeId);
+				}
+				entityMap.Add(entity.typeId, entity);
+			}
+			foreach (Entity entity in structures) {
 				if (entityMap.ContainsKey(entity.typeId)) {
 					throw new System.Exception("Multiple entites have the same ID: " + entity.typeId);
 				}
@@ -33,5 +40,10 @@ public class EntityDatabase : ScriptableObject {
 
 	public Entity GetEntityInstance(string typeId, Vector3 position, Quaternion rotation, Transform parent) {
 		return Instantiate<GameObject>(GetEntityReference(typeId).gameObject, position, rotation, parent).GetComponent<Entity>();
+	}
+
+	public GameObject GetConstruction(string structureTypeId, Transform parent = null) {
+		Structure structure = GetEntityReference(structureTypeId) as Structure;
+		return Instantiate<GameObject>(structure.constructionPrefab, parent);
 	}
 }

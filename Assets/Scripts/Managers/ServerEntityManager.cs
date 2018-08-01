@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.AI;
 
 public class ServerEntityManager : Singleton<ServerEntityManager> {
 	
@@ -9,6 +10,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	private static readonly string CLIENT_SELF_TAG = "ClientSelf";
 
 	public EntityDatabase entityDatabase;
+	public LayerMask constructionOverlapLayers;
 
 	private Dictionary<string, List<PlayerUnit>> playerUnits = new Dictionary<string, List<PlayerUnit>>();
 	private Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
@@ -43,6 +45,19 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		playerUnits.Add(playerId, units);
 	}
 
+	public Entity GetEntity(string entityId) {
+		if (entities.ContainsKey(entityId)) {
+			return entities[entityId];
+		}
+		return null;
+	}
+
+	public List<Unit> GetUnitsForPlayer(string playerId) {
+		return (from entity in entities.Values
+				where entity is Unit && entity.PlayerId.Equals(playerId)
+				select (Unit)entity).ToList();
+	}
+
 	public void SpawnPlayerSquad(Player player, List<PlayerUnit> playerUnits) {
 		Vector3 spawnPos = serverGameManager.TeamSpawns[player.TeamId].transform.position;
 		foreach (PlayerUnit playerUnit in playerUnits) {
@@ -53,21 +68,25 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		}
 	}
 
-	public Entity GetEntity(string entityId) {
-		if (entities.ContainsKey(entityId)) {
-			return entities[entityId];
+	public void SpawnStructure(Player player, string structureTypeId, Vector3 spawnPos) {
+		//navmesh check
+		NavMeshHit navHit;
+		if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
+			GameObject construction = entityDatabase.GetConstruction(structureTypeId);
+			construction.transform.position = spawnPos;
+			Collider constructionCollider = construction.GetComponentInChildren<Collider>();
+
+			//collision/overlap check
+			Collider[] colliders = Physics.OverlapBox(constructionCollider.bounds.center,
+				constructionCollider.bounds.extents, constructionCollider.transform.rotation, constructionOverlapLayers);
+			if (colliders.Count(x => x != constructionCollider) == 0) {
+				Structure newStructure = (Structure)entityDatabase.GetEntityInstance(structureTypeId, spawnPos, Quaternion.identity);
+				newStructure.SetPlayer(player);
+				RegisterEntity(newStructure);
+			}
+
+			Destroy(construction);
 		}
-		return null;
-	}
-
-	public List<Entity> GetEntitiesForPlayer(string playerId) {
-		return (from entity in entities.Values
-				where entity.PlayerId.Equals(playerId)
-				select entity).ToList();
-	}
-
-	public Entity CreateEntity(string entityTypeId) {
-		return entityDatabase.GetEntityInstance(entityTypeId);
 	}
 
 	public void RegisterEntity(Entity entity) {
@@ -130,11 +149,11 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 		foreach (Entity entity in actingEntities) {
 			if (entity.PlayerId.Equals(sourcePlayerId)) {
-				if (command.Type == CommandType.MOVE && entity.EntityController is UnitController) {
-					(entity.EntityController as UnitController).Move(command.Point, groupMovementCenter);
+				if (command.Type == CommandType.MOVE && entity.CanMove) {
+					entity.EntityController.Move(command.Point, groupMovementCenter);
 				} else if (command.Type == CommandType.STOP) {
 					entity.EntityController.Stop();
-				} else if (command.Type == CommandType.ATTACK) {
+				} else if (command.Type == CommandType.ATTACK && entity.CanAttack) {
 					if (entities.ContainsKey(command.TargetEntityId)) {
 						entity.EntityController.Attack(entities[command.TargetEntityId]);
 					}
@@ -148,7 +167,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	public void HandleEntityDeath(Entity entity) {
 		entity.EntityController.Die();
 		
-		if (playerUnits.ContainsKey(entity.PlayerId)) {
+		if (entity is Unit && playerUnits.ContainsKey(entity.PlayerId)) {
 			PlayerUnit playerUnit = (from pu in playerUnits[entity.PlayerId]
 									 where pu.PlayerUnitId == (entity as Unit).PlayerUnitId
 									 select pu).FirstOrDefault();

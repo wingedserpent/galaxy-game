@@ -8,6 +8,7 @@ TagManager:
   - ClientAny
   - ClientTeamOrAuthority
   - Terrain
+  - SelfOnly
   layers:
   - Default
   - TransparentFX
@@ -20,9 +21,9 @@ TagManager:
   - Vision Mesh
   - Vision Blocker
   - Vision Target
-  - 
-  - 
-  - 
+  - Ground
+  - Unit
+  - Structure
   - 
   - 
   - 

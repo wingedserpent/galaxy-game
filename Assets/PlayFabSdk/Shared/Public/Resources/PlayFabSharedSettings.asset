@@ -13,12 +13,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TitleId: 7DC1
   DeveloperSecretKey: JEUX9NOEZMR7NZD3US1E6FHZQUEKUMQST6FEHKMCSDSTGA8YUI
-  ProductionEnvironmentUrl: .playfabapi.com
+  ProductionEnvironmentUrl: 
   RequestType: 0
   RequestTimeout: 2000
   RequestKeepAlive: 1
   CompressApiData: 0
-  LogLevel: 2
+  LogLevel: 12
   LoggerHost: 
   LoggerPort: 0
   EnableRealTimeLogging: 0

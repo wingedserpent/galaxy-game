@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4538654134910504}
   - component: {fileID: 33302366175853474}
   - component: {fileID: 23000391082911310}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarSuspensionFrontLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 4954237095113358}
   - component: {fileID: 33536396967657354}
   - component: {fileID: 23674584959482262}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarSuspensionFrontRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4134731991388906}
   - component: {fileID: 114030346304550728}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Visuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 4290751235317138}
   - component: {fileID: 33089078931311766}
   - component: {fileID: 23779231946194292}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarWheelFrontLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 4149859424558438}
   - component: {fileID: 33702882415377160}
   - component: {fileID: 23769401804607798}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarMudGuardFrontLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 4516693564013706}
   - component: {fileID: 33110857718672562}
   - component: {fileID: 23713912097845068}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarWheelRearLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 4559469025260486}
   - component: {fileID: 33749756409306798}
   - component: {fileID: 23883042507992764}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarBrakeLightsGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 65090339431264280}
   - component: {fileID: 23782832807960388}
   - component: {fileID: 114681669923108360}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Default Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -176,7 +176,7 @@ GameObject:
   - component: {fileID: 4462530050870580}
   - component: {fileID: 33756439934064900}
   - component: {fileID: 23666339244688386}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarMudGuardFrontRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193,7 +193,7 @@ GameObject:
   - component: {fileID: 4020245472452160}
   - component: {fileID: 33385617475360142}
   - component: {fileID: 23032179926533954}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -210,7 +210,7 @@ GameObject:
   - component: {fileID: 4706990547153710}
   - component: {fileID: 33854575590106534}
   - component: {fileID: 23561453736964498}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarWheelFrontRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -227,7 +227,7 @@ GameObject:
   - component: {fileID: 4839034616604744}
   - component: {fileID: 33871145920411112}
   - component: {fileID: 23365585854347492}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarHeadLightsGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 4716918244886330}
   - component: {fileID: 33462609771442966}
   - component: {fileID: 23058067288180826}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarComponents
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -263,7 +263,7 @@ GameObject:
   - component: {fileID: 208366057788479048}
   - component: {fileID: 114231282300609478}
   - component: {fileID: 114194201512946914}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Car
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -278,7 +278,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4802056619959198}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Colliders
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -296,7 +296,7 @@ GameObject:
   - component: {fileID: 33135228990753350}
   - component: {fileID: 23158755978344596}
   - component: {fileID: 114815032755347130}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Selection Marker
   m_TagString: ClientSelf
   m_Icon: {fileID: 0}
@@ -329,7 +329,7 @@ GameObject:
   - component: {fileID: 4783067223447060}
   - component: {fileID: 33393747161750178}
   - component: {fileID: 23043887585541132}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: SkyCarWheelRearRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1281,7 +1281,6 @@ MonoBehaviour:
   projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
     type: 2}
   deathEffectPrefab: {fileID: 100010, guid: 645413a00f7bd0242bbd6d0e5eb6f439, type: 2}
-  attackSound: {fileID: 8300000, guid: f433dd47bae4e4db5a0518044da14a8d, type: 3}
   damagedSound: {fileID: 0}
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
   unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
@@ -1377,6 +1376,6 @@ NavMeshObstacle:
   m_Extents: {x: 1, y: 1, z: 1}
   m_MoveThreshold: 0.1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5

@@ -14,4 +14,5 @@ public static class NetworkTags {
 	public const int Command = 30;
 	public const int UnitList = 40;
 	public const int SquadSelection = 41;
+	public const int Construction = 50;
 }

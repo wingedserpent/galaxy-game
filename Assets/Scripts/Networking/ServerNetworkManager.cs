@@ -64,9 +64,15 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 		using (Message message = e.GetMessage())
 		using (DarkRiftReader reader = message.GetReader()) {
 			if (ClientAccountMap.ContainsKey(e.Client)) {
+				//valid, joined player
 				if (serverGameManager.GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
+					//game is in progress
 					if (message.Tag == NetworkTags.Command) {
 						entityManager.HandleCommand(reader.ReadSerializable<Command>(), ClientAccountMap[e.Client].PlayFabId);
+					} else if (message.Tag == NetworkTags.Construction) {
+						entityManager.SpawnStructure(serverGameManager.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), 
+							reader.ReadString(), 
+							new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 					} else if (message.Tag == NetworkTags.UnitList) {
 						List<PlayerUnit> playerUnits = entityManager.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
 						if (playerUnits == null) {
@@ -142,7 +148,7 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 			using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 				writer.Write(serverGameManager.GameState);
 				//whether player already has entities spawned
-				writer.Write(entityManager.GetEntitiesForPlayer(player.ID).Count > 0);
+				writer.Write(entityManager.GetUnitsForPlayer(player.ID).Count > 0);
 
 				using (Message message = Message.Create(NetworkTags.GameState, writer)) {
 					client.SendMessage(message, SendMode.Reliable);

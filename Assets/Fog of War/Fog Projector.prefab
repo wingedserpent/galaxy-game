@@ -149,6 +149,7 @@ MonoBehaviour:
   upsample: 2
   blur: 1
   blendSpeed: 3
+  updateFrameDelay: 10
 --- !u!119 &119829474156600428
 Projector:
   m_ObjectHideFlags: 1

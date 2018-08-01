@@ -153,4 +153,15 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 			}
 		}
 	}
+
+	public void SendConstruction(string structureTypeId, Vector3 position) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			writer.Write(structureTypeId);
+			writer.Write(position.x); writer.Write(position.y); writer.Write(position.z);
+
+			using (Message message = Message.Create(NetworkTags.Construction, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
 }

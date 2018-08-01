@@ -293,7 +293,7 @@ MonoBehaviour:
   autoHeight: 1
   groundMask:
     serializedVersion: 2
-    m_Bits: 528
+    m_Bits: 2064
   minHeight: 40
   maxHeight: 60
   minZoom: 40
@@ -468,7 +468,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 473830, guid: 3fa8d9a295d78c747b79a20cb0c1c0d6, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 473830, guid: 3fa8d9a295d78c747b79a20cb0c1c0d6, type: 2}
       propertyPath: m_LocalRotation.x
@@ -627,7 +627,7 @@ MonoBehaviour:
   pointGainFrequency: 5
   unitLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 4096
   colorable: {fileID: 16902525}
 --- !u!4 &809112901
 Transform:
@@ -691,6 +691,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   persistent: 0
   entityDatabase: {fileID: 11400000, guid: be039e5ff7481ee4a94a7719e632759e, type: 2}
+  constructionOverlapLayers:
+    serializedVersion: 2
+    m_Bits: 10257
 --- !u!114 &817773704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -774,10 +777,10 @@ MonoBehaviour:
   persistent: 0
   visionMask:
     serializedVersion: 2
-    m_Bits: 529
+    m_Bits: 1024
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 2560
 --- !u!114 &817773709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -944,7 +947,7 @@ MonoBehaviour:
   pointGainFrequency: 5
   unitLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 4096
   colorable: {fileID: 1737814055}
 --- !u!4 &1383761111
 Transform:

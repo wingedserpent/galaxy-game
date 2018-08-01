@@ -53,7 +53,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4731292142155718}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Colliders
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 33636623464254016}
   - component: {fileID: 23676972101469868}
   - component: {fileID: 114524392902342580}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: PA_Drone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 33391275994340114}
   - component: {fileID: 23165180181032922}
   - component: {fileID: 114134837021573564}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Selection Marker
   m_TagString: ClientSelf
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 4854274738793750}
   - component: {fileID: 33673570867982578}
   - component: {fileID: 23489753650131178}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: PA_DroneBladeLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,7 +127,7 @@ GameObject:
   - component: {fileID: 208767671803596138}
   - component: {fileID: 114403446751357546}
   - component: {fileID: 114765806378823428}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Drone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -144,7 +144,7 @@ GameObject:
   - component: {fileID: 4556389792184892}
   - component: {fileID: 33647495161801956}
   - component: {fileID: 23654716782366990}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: PA_DroneWingRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -161,7 +161,7 @@ GameObject:
   - component: {fileID: 4398967567578296}
   - component: {fileID: 33503383143498098}
   - component: {fileID: 23175075349630932}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: PA_DroneWingLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 4988808368229604}
   - component: {fileID: 33713578540306048}
   - component: {fileID: 23588235243972694}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: PA_DroneBladeRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -195,7 +195,7 @@ GameObject:
   - component: {fileID: 4555343292542744}
   - component: {fileID: 65275495296681250}
   - component: {fileID: 114667082789851970}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Default Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -728,7 +728,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.5
+      value: 0.9
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -812,7 +812,7 @@ MonoBehaviour:
   currentHealth: 40
   maxHealth: 40
   attackRange: 10
-  attackSpeed: 1.5
+  attackSpeed: 2
   attackDamage: 2
 --- !u!114 &114524392902342580
 MonoBehaviour:
@@ -847,14 +847,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402f71065a761f24193ec9c21b85e833, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
-    type: 2}
   deathEffectPrefab: {fileID: 100010, guid: 645413a00f7bd0242bbd6d0e5eb6f439, type: 2}
-  attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
   damagedSound: {fileID: 0}
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
   unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
     type: 2}
+  projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+    type: 2}
+  projectileSpawnPoint: {fileID: 4307887207243772}
+  attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
 --- !u!114 &114881400193497414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -907,6 +908,6 @@ NavMeshObstacle:
   m_Extents: {x: 1, y: 1, z: 1}
   m_MoveThreshold: 0.1
   m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_CarveOnlyStationary: 0
+  m_Center: {x: 0, y: -3, z: 0}
   m_TimeToStationary: 0.5

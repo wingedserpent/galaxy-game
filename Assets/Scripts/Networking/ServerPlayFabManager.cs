@@ -27,6 +27,7 @@ public class ServerPlayFabManager : Singleton<ServerPlayFabManager> {
 		ipAddress = externalIPRequest.text;
 
 		Debug.Log("PlayFab: Attempting to register game server.");
+
 		PlayFabServerAPI.RegisterGame(new RegisterGameRequest() {
 			ServerHost = ipAddress,
 			ServerPort = server.Port.ToString(),

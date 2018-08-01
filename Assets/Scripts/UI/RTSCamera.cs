@@ -211,21 +211,31 @@ namespace RTSCam
         /// </summary>
         private void Move()
         {
-            if (useKeyboardInput)
+			Vector3 desiredMove = new Vector3();
+
+			if (useKeyboardInput)
             {
-                Vector3 desiredMove = new Vector3(KeyboardInput.x, 0, KeyboardInput.y);
+				desiredMove = new Vector3(KeyboardInput.x, 0, KeyboardInput.y);
 
                 desiredMove *= keyboardMovementSpeed;
                 desiredMove *= Time.deltaTime;
                 desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
                 desiredMove = m_Transform.InverseTransformDirection(desiredMove);
+            }
+        
+            if(usePanning && desiredMove == Vector3.zero && Input.GetKey(panningKey) && MouseAxis != Vector2.zero)
+            {
+                desiredMove = new Vector3(-MouseAxis.x, 0, -MouseAxis.y);
 
-                m_Transform.Translate(desiredMove, Space.Self);
+                desiredMove *= panningSpeed;
+                desiredMove *= Time.deltaTime;
+                desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
+                desiredMove = m_Transform.InverseTransformDirection(desiredMove);
             }
 
-            if (useScreenEdgeInput)
+            if (useScreenEdgeInput && desiredMove == Vector3.zero)
             {
-                Vector3 desiredMove = new Vector3();
+                desiredMove = new Vector3();
 
                 Rect leftRect = new Rect(0, 0, screenEdgeBorder, Screen.height);
                 Rect rightRect = new Rect(Screen.width - screenEdgeBorder, 0, screenEdgeBorder, Screen.height);
@@ -239,21 +249,9 @@ namespace RTSCam
                 desiredMove *= Time.deltaTime;
                 desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
                 desiredMove = m_Transform.InverseTransformDirection(desiredMove);
-
-                m_Transform.Translate(desiredMove, Space.Self);
-            }       
-        
-            if(usePanning && Input.GetKey(panningKey) && MouseAxis != Vector2.zero)
-            {
-                Vector3 desiredMove = new Vector3(-MouseAxis.x, 0, -MouseAxis.y);
-
-                desiredMove *= panningSpeed;
-                desiredMove *= Time.deltaTime;
-                desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
-                desiredMove = m_Transform.InverseTransformDirection(desiredMove);
-
-                m_Transform.Translate(desiredMove, Space.Self);
             }
+
+            m_Transform.Translate(desiredMove, Space.Self);
         }
 
 		/*

@@ -69,10 +69,11 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 
 	private void ScrubEntity(Entity entity) {
 		if (entity.TeamId == clientGameManager.MyPlayer.TeamId) {
-			//immediately send visibility=false update
-			entity.EntityController.VisibilityTargetDispatch(null);
 			//disable visibility updates for teammates since they will always be visible
 			entity.EntityController.UpdateVisibility = false;
+		} else {
+			//immediately send visibility=false update to ensure everything starts hidden
+			entity.EntityController.VisibilityTargetDispatch(null);
 		}
 		
 		//remove any children that don't need to exist on a client
@@ -85,7 +86,9 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 
 		//disable nav mesh agents since they can cause "jiggling" on the client screen
-		entity.GetComponent<NavMeshAgent>().enabled = false;
+		if (entity.GetComponent<NavMeshAgent>() != null) {
+			entity.GetComponent<NavMeshAgent>().enabled = false;
+		}
 	}
 
 	public void HandleEntityDeath(string entityId) {
@@ -95,5 +98,9 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 
 			DestroyEntity(entity.ID, 1f);
 		}
+	}
+
+	public GameObject SpawnConstruction(string entityTypeId) {
+		return entityDatabase.GetConstruction(entityTypeId);
 	}
 }

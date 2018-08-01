@@ -19,7 +19,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4807541781496768}
-  m_Layer: 9
+  m_Layer: 11
   m_Name: Test Stage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ GameObject:
   - component: {fileID: 4944607150545124}
   - component: {fileID: 218197581386912916}
   - component: {fileID: 154914905256336226}
-  m_Layer: 9
+  m_Layer: 11
   m_Name: Terrain (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   - component: {fileID: 33124918676883310}
   - component: {fileID: 23972314570614652}
   - component: {fileID: 64156413821354198}
-  m_Layer: 9
+  m_Layer: 11
   m_Name: Ramp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 4327061217001260}
   - component: {fileID: 218406181611005856}
   - component: {fileID: 154466791272684876}
-  m_Layer: 9
+  m_Layer: 11
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}

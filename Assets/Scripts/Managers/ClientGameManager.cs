@@ -15,6 +15,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	public Text scoreDisplay;
 
 	public bool IsOfflineTest { get; private set; }
+	public bool IsAcceptingGameInput { get; private set; }
 	public GameStates ClientState { get; private set; }
 	public GameState GameState { get; private set; }
 	public Player MyPlayer { get; private set; }
@@ -24,6 +25,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	protected override void Awake() {
 		base.Awake();
 		IsOfflineTest = false;
+		IsAcceptingGameInput = false;
 		ClientState = GameStates.WAITING_FOR_PLAYERS;
 	}
 
@@ -59,15 +61,19 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 			squadMenuController.OpenMenu(MyPlayer.MaxSquadCost);
 		}
 		ClientState = GameStates.GAME_IN_PROGRESS;
+		IsAcceptingGameInput = true;
 	}
 
 	public void StartOfflineTest() {
 		IsOfflineTest = true;
 		ClientState = GameStates.GAME_IN_PROGRESS;
+		IsAcceptingGameInput = true;
 	}
 
 	public void EndGame() {
 		ClientState = GameStates.GAME_COMPLETED;
+		IsAcceptingGameInput = false;
+
 		Debug.Log("Game Over!");
 
 		Invoke("RestartGame", 10f);

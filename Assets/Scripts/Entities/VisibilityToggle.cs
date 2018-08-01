@@ -12,6 +12,7 @@ public class VisibilityToggle : MonoBehaviour {
 
 	private void Start() {
 		EntityController.OnVisibilityUpdated += OnVisibilityUpdated;
+		OnVisibilityUpdated(EntityController.IsVisible); //make one immediate call to ensure my vis is set properly
 	}
 
 	private void OnDestroy() {

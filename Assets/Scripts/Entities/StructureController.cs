@@ -7,5 +7,22 @@ using DarkRift;
 
 public class StructureController : EntityController {
 
-	//placeholder, nothing here yet...
+	protected float constructionTimer;
+
+	protected Structure structure;
+
+	protected override void Awake() {
+		base.Awake();
+
+		structure = GetComponent<Structure>();
+		constructionTimer = structure.constructionTime;
+	}
+
+	protected override void Update() {
+		if (constructionTimer > 0f) {
+			constructionTimer -= Time.deltaTime;
+		}
+
+		base.Update();
+	}
 }

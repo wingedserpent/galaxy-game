@@ -5,11 +5,6 @@ using System.Collections.Generic;
 
 public class Structure : Entity {
 
-	public override void Deserialize(DeserializeEvent e) {
-		base.Deserialize(e);
-	}
-
-	public override void Serialize(SerializeEvent e) {
-		base.Serialize(e);
-	}
+	public GameObject constructionPrefab;
+	public float constructionTime = 0f;
 }
