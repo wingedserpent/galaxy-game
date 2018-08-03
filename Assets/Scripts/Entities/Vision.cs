@@ -28,6 +28,7 @@ public class Vision : MonoBehaviour
 
 	private VisibilityManager visibilityManager;
 	private Entity selfEntity;
+	private Collider myVisionCollider;
 
 	void Awake() {
 		VisibleTargets = new List<Entity>();
@@ -37,6 +38,7 @@ public class Vision : MonoBehaviour
     {
 		visibilityManager = VisibilityManager.Instance;
 		selfEntity = GetComponentInParent<Entity>();
+		myVisionCollider = GetComponentsInChildren<Collider>().Where(x => visionMask == (visionMask | (1 << x.gameObject.layer))).FirstOrDefault();
 
 		visionMask = visibilityManager.visionMask;
 		obstacleMask = visibilityManager.obstacleMask;
@@ -76,11 +78,15 @@ public class Vision : MonoBehaviour
         {
 			Entity target = targetsInViewRadius[i].GetComponentInParent<Entity>();
 			if (target != null && target.TeamId != selfEntity.TeamId) {
-				Vector3 dirToTarget = (target.transform.position - transform.position).normalized;
+				Collider targetVisionCollider = target.GetComponentsInChildren<Collider>()
+					.Where(x => visionMask == (visionMask | (1 << x.gameObject.layer))).FirstOrDefault();
+				Vector3 targetPosition = targetVisionCollider != null ? targetVisionCollider.bounds.center : target.transform.position;
+				Vector3 myPosition = myVisionCollider != null ? myVisionCollider.bounds.center : transform.position;
 
-				if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2) {
-					float dstToTarget = Vector3.Distance(transform.position, target.transform.position);
-					if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask)) {
+				Vector3 dirToTarget = (targetPosition - myPosition).normalized;
+				if (Vector3.Angle(transform.forward, dirToTarget) <= viewAngle / 2) {
+					float dstToTarget = Vector3.Distance(myPosition, targetPosition);
+					if (!Physics.Raycast(myPosition, dirToTarget, dstToTarget, obstacleMask)) {
 						VisibleTargets.Add(target);
 					}
 				}

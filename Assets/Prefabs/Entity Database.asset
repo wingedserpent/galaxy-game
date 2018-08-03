@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Name: Entity Database
   m_EditorClassIdentifier: 
   units:
-  - {fileID: 114259619833812652, guid: 633c091aedda0e44c9999c41d6ae41db, type: 2}
+  - {fileID: 114414286257667330, guid: 633c091aedda0e44c9999c41d6ae41db, type: 2}
   - {fileID: 114403446751357546, guid: ab1e411cd6962ea44b7604b26088c551, type: 2}
+  - {fileID: 114834448093211342, guid: b7fc99e644655324fa384b5740264a12, type: 2}
   structures:
   - {fileID: 114702009273401912, guid: 2247792e9ebf23a4c8562e58348a6b63, type: 2}

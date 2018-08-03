@@ -9,17 +9,18 @@ public class WarriorController : UnitController {
 
 	public KeyCode shieldKey;
 	public GameObject shieldGameObject;
-	public float shieldActiveTime;
-	public float shieldCooldown;
 
 	protected bool isShieldActive = false;
 	protected float shieldActiveTimer = 0f;
 	protected float shieldCooldownTimer = 0f;
+
+	private Warrior warrior;
 	protected MeshRenderer shieldRenderer;
 
 	protected override void Awake() {
 		base.Awake();
 
+		warrior = GetComponent<Warrior>();
 		shieldRenderer = shieldGameObject.GetComponent<MeshRenderer>();
 	}
 
@@ -58,7 +59,7 @@ public class WarriorController : UnitController {
 		if (!isShieldActive && shieldCooldownTimer <= 0f) {
 			shieldRenderer.enabled = true;
 			shieldGameObject.SetActive(true);
-			shieldActiveTimer = shieldActiveTime;
+			shieldActiveTimer = warrior.shieldActiveTime;
 			isShieldActive = true;
 		}
 	}
@@ -66,7 +67,7 @@ public class WarriorController : UnitController {
 	protected void DeactivateShield() {
 		shieldRenderer.enabled = true;
 		shieldGameObject.SetActive(false);
-		shieldCooldownTimer = shieldCooldown;
+		shieldCooldownTimer = warrior.shieldCooldown;
 		isShieldActive = false;
 	}
 

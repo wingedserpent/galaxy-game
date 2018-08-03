@@ -11,7 +11,7 @@ public class EntityDatabase : ScriptableObject {
 
 	private Dictionary<string, Entity> entityMap;
 
-	private Entity GetEntityReference(string typeId) {
+	public Entity GetEntityReference(string typeId) {
 		if (entityMap == null) {
 			entityMap = new Dictionary<string, Entity>();
 			foreach (Entity entity in units) {

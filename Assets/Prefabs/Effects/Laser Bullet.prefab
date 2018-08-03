@@ -80,7 +80,7 @@ TrailRenderer:
   m_Time: 0.1
   m_Parameters:
     serializedVersion: 2
-    widthMultiplier: 0.5
+    widthMultiplier: 0.2
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -144,4 +144,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 100
+  time: 0
   target: {fileID: 0}
+  easeType: 1
+  resetOnComplete: 0
+  destroyOnComplete: 0

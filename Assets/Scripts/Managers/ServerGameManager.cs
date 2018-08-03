@@ -90,6 +90,7 @@ public class ServerGameManager : Singleton<ServerGameManager> {
 		} else {
 			player = new Player(playerId, name);
 			player.TeamId = (ushort)nextTeam;
+			player.Resources = 100;
 			nextTeam = nextTeam >= 2 ? 1 : nextTeam + 1;
 		}
 		GameState.Teams[player.TeamId].Players.Add(player.ID, player);
@@ -112,5 +113,17 @@ public class ServerGameManager : Singleton<ServerGameManager> {
 		} else {
 			serverNetworkManager.BroadcastGameState(GameState);
 		}
+	}
+
+	public void IncreaseResources(ushort teamId, int resources) {
+		foreach (Player player in GameState.Teams[teamId].Players.Values) {
+			player.Resources += resources;
+		}
+		serverNetworkManager.BroadcastGameState(GameState);
+	}
+
+	public void DecreaseResources(Player player, int resources) {
+		player.Resources -= resources;
+		serverNetworkManager.BroadcastGameState(GameState);
 	}
 }

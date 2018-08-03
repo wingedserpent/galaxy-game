@@ -6,8 +6,15 @@ using System.Collections.Generic;
 public class Entity : MonoBehaviour, IDarkRiftSerializable {
 
 	public string typeId;
+	[NonSerialized]
 	public int currentHealth;
 	public int maxHealth;
+	public float attackRange;
+	public float attackSpeed;
+	public int attackDamage;
+	public bool isInAir;
+	public bool canAttackGround;
+	public bool canAttackAir;
 
 	public virtual bool CanMove { get { return false; } }
 	public virtual bool CanAttack { get { return false; } }
@@ -29,6 +36,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	private void Awake() {
 		EntityController = GetComponent<EntityController>();
 
+		currentHealth = maxHealth;
 		ID = Guid.NewGuid().ToString();
 		PlayerId = "ZZZZ";
 		TeamId = 999;

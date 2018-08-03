@@ -69,23 +69,28 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	}
 
 	public void SpawnStructure(Player player, string structureTypeId, Vector3 spawnPos) {
-		//navmesh check
-		NavMeshHit navHit;
-		if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
-			GameObject construction = entityDatabase.GetConstruction(structureTypeId);
-			construction.transform.position = spawnPos;
-			Collider constructionCollider = construction.GetComponentInChildren<Collider>();
+		Entity entityRef = entityDatabase.GetEntityReference(structureTypeId);
+		if (player.Resources >= (entityRef as Structure).resourceCost) {
+			//navmesh check
+			NavMeshHit navHit;
+			if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
+				GameObject construction = entityDatabase.GetConstruction(structureTypeId);
+				construction.transform.position = spawnPos;
+				Collider constructionCollider = construction.GetComponentInChildren<Collider>();
 
-			//collision/overlap check
-			Collider[] colliders = Physics.OverlapBox(constructionCollider.bounds.center,
-				constructionCollider.bounds.extents, constructionCollider.transform.rotation, constructionOverlapLayers);
-			if (colliders.Count(x => x != constructionCollider) == 0) {
-				Structure newStructure = (Structure)entityDatabase.GetEntityInstance(structureTypeId, spawnPos, Quaternion.identity);
-				newStructure.SetPlayer(player);
-				RegisterEntity(newStructure);
+				//collision/overlap check
+				Collider[] colliders = Physics.OverlapBox(constructionCollider.bounds.center,
+					constructionCollider.bounds.extents, constructionCollider.transform.rotation, constructionOverlapLayers);
+				if (colliders.Count(x => x != constructionCollider) == 0) {
+					Structure newStructure = (Structure)entityDatabase.GetEntityInstance(structureTypeId, spawnPos, Quaternion.identity);
+					newStructure.SetPlayer(player);
+					RegisterEntity(newStructure);
+					
+					serverGameManager.DecreaseResources(player, (entityRef as Structure).resourceCost);
+				}
+
+				Destroy(construction);
 			}
-
-			Destroy(construction);
 		}
 	}
 

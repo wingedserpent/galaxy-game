@@ -13,6 +13,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	public ConnectionMenuController connectionMenuController;
 	public SquadMenuController squadMenuController;
 	public Text scoreDisplay;
+	public Text resourceDisplay;
 
 	public bool IsOfflineTest { get; private set; }
 	public bool IsAcceptingGameInput { get; private set; }
@@ -53,7 +54,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 			EndGame();
 		}
 
-		UpdateScoreDisplay();
+		UpdateDisplays();
 	}
 
 	private void StartGame(bool hasSpawnedEntities) {
@@ -66,6 +67,9 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 
 	public void StartOfflineTest() {
 		IsOfflineTest = true;
+		MyPlayer = new Player("ZZZZ", "Offline Tester");
+		MyPlayer.TeamId = 1;
+		MyPlayer.Resources = 9999;
 		ClientState = GameStates.GAME_IN_PROGRESS;
 		IsAcceptingGameInput = true;
 	}
@@ -104,10 +108,12 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 		squadMenuController.OpenMenu();
 	}
 
-	public void UpdateScoreDisplay() {
+	public void UpdateDisplays() {
 		scoreDisplay.text = "Score:\n";
 		foreach (Team team in GameState.Teams.Values) {
 			scoreDisplay.text += team.Name + ": " + team.Score + "\n";
 		}
+
+		resourceDisplay.text = "Resources:\n" + MyPlayer.Resources;
 	}
 }

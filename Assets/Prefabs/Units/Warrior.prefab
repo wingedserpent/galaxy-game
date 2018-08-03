@@ -561,7 +561,7 @@ GameObject:
   - component: {fileID: 82693775802612792}
   - component: {fileID: 195876665196383404}
   - component: {fileID: 208766085141143490}
-  - component: {fileID: 114259619833812652}
+  - component: {fileID: 114414286257667330}
   - component: {fileID: 114593441639328540}
   m_Layer: 12
   m_Name: Warrior
@@ -1435,7 +1435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68bd71b49c8353244abacd17f0abf512, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114259619833812652
+--- !u!114 &114414286257667330
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -1443,15 +1443,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1779039953840750}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c0706fc5eb72284fb5bcca0d10d245b, type: 3}
+  m_Script: {fileID: 11500000, guid: b9c670cf32aa4af4f9376b9ea1d09ad9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: warrior
-  currentHealth: 100
   maxHealth: 100
   attackRange: 15
   attackSpeed: 1.5
   attackDamage: 4
+  isInAir: 0
+  canAttackGround: 1
+  canAttackAir: 1
+  shieldActiveTime: 8
+  shieldCooldown: 15
 --- !u!114 &114593441639328540
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1471,11 +1475,11 @@ MonoBehaviour:
   projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
     type: 2}
   projectileSpawnPoint: {fileID: 4402722559298316}
+  existingProjectiles: []
+  attackEffectTime: 0
   attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
   shieldKey: 102
   shieldGameObject: {fileID: 1347072342552222}
-  shieldActiveTime: 8
-  shieldCooldown: 20
 --- !u!114 &114838171155759418
 MonoBehaviour:
   m_ObjectHideFlags: 1

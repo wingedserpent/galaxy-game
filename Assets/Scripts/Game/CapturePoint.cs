@@ -8,8 +8,9 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 	public ushort ID;
 	public float captureTime;
 	public float captureRadius;
-	public int pointGain;
-	public float pointGainFrequency;
+	public GainType gainType;
+	public int gainAmount;
+	public float gainFrequency;
 	public LayerMask unitLayers;
 	public Renderer colorable;
 
@@ -17,10 +18,10 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 	public ushort CapturingTeamId { get; set; }
 	public ushort OwningTeamId { get; set; }
 
-	private float captureTimer = 0f;
-	
-	private ServerGameManager serverGameManager;
-	private ClientGameManager clientGameManager;
+	protected float captureTimer = 0f;
+
+	protected ServerGameManager serverGameManager;
+	protected ClientGameManager clientGameManager;
 
 	private void Awake() {
 		CaptureState = CaptureState.UNCAPTURED;
@@ -43,14 +44,18 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 					OwningTeamId = CapturingTeamId;
 					CaptureState = CaptureState.CAPTURED;
 					Debug.Log(name + " captured by team " + OwningTeamId + "!");
-					InvokeRepeating("UpdateScore", pointGainFrequency, pointGainFrequency);
+					InvokeRepeating("UpdateGain", gainFrequency, gainFrequency);
 				}
 			}
 		}
 	}
 
-	private void UpdateScore() {
-		serverGameManager.IncreaseScore((ushort)OwningTeamId, pointGain);
+	private void UpdateGain() {
+		if (gainType == GainType.SCORE) {
+			serverGameManager.IncreaseScore((ushort)OwningTeamId, gainAmount);
+		} else if (gainType == GainType.RESOURCE) {
+			serverGameManager.IncreaseResources((ushort)OwningTeamId, gainAmount);
+		}
 	}
 
 	private void CheckUnitsInside() {
@@ -63,7 +68,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 				} else if (teamIdInside != entity.TeamId) {
 					//more than one team inside, mark as contested and stop scoring
 					CaptureState = CaptureState.CONTESTED;
-					CancelInvoke("UpdateScore");
+					CancelInvoke("UpdateGain");
 					return;
 				}
 			}
@@ -75,7 +80,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 				if (teamIdInside == OwningTeamId) {
 					//point was owned before it was contested, so return to captured and resume scoring
 					CaptureState = CaptureState.CAPTURED;
-					InvokeRepeating("UpdateScore", pointGainFrequency, pointGainFrequency);
+					InvokeRepeating("UpdateGain", gainFrequency, gainFrequency);
 				} else if (teamIdInside == CapturingTeamId) {
 					//team was capturing before it was contested, so continue without resetting timer
 					CaptureState = CaptureState.CAPTURING;
@@ -84,7 +89,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 					CapturingTeamId = (ushort)teamIdInside;
 					captureTimer = 0f;
 					CaptureState = CaptureState.CAPTURING;
-					CancelInvoke("UpdateScore");
+					CancelInvoke("UpdateGain");
 				}
 			} else if (CaptureState == CaptureState.UNCAPTURED
 					|| (CaptureState == CaptureState.CAPTURING && teamIdInside != CapturingTeamId)
@@ -92,7 +97,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 				CapturingTeamId = (ushort)teamIdInside;
 				captureTimer = 0f;
 				CaptureState = CaptureState.CAPTURING;
-				CancelInvoke("UpdateScore");
+				CancelInvoke("UpdateGain");
 			}
 		} else {
 			//nobody is inside
@@ -117,6 +122,11 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 		e.Writer.Write(CapturingTeamId);
 		e.Writer.Write(OwningTeamId);
 	}
+}
+
+public enum GainType {
+	SCORE,
+	RESOURCE
 }
 
 public enum CaptureState {

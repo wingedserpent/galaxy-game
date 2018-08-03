@@ -9,12 +9,14 @@ public class Player : IDarkRiftSerializable {
 	public ushort TeamId { get; set; }
 	public string Name { get; private set; }
 	public int MaxSquadCost { get; set; }
+	public int Resources { get; set; }
 
 	public Player() { }
 
 	public Player(string id, string name) {
 		ID = id;
 		Name = name;
+		Resources = 0;
 	}
 
 	public void Deserialize(DeserializeEvent e) {
@@ -22,6 +24,7 @@ public class Player : IDarkRiftSerializable {
 		TeamId = e.Reader.ReadUInt16();
 		Name = e.Reader.ReadString();
 		MaxSquadCost = e.Reader.ReadInt32();
+		Resources = e.Reader.ReadInt32();
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -29,6 +32,7 @@ public class Player : IDarkRiftSerializable {
 		e.Writer.Write(TeamId);
 		e.Writer.Write(Name);
 		e.Writer.Write(MaxSquadCost);
+		e.Writer.Write(Resources);
 	}
 
 	public override bool Equals(object obj) {

@@ -103,4 +103,8 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public GameObject SpawnConstruction(string entityTypeId) {
 		return entityDatabase.GetConstruction(entityTypeId);
 	}
+
+	public Entity GetEntityReference(string typeId) {
+		return entityDatabase.GetEntityReference(typeId);
+	}
 }

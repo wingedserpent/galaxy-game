@@ -11,12 +11,17 @@ ModelImporter:
     3300000: PA_DropPod 1
     4300000: PA_DropPod
     9500000: //RootNode
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PA_DropPodMat
+    second: {fileID: 2100000, guid: af0d33e3f402ddc4dade40562c3c1ec2, type: 2}
   materials:
     importMaterials: 1
     materialName: 1
     materialSearch: 2
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
