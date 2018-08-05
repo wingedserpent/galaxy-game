@@ -16,6 +16,7 @@ public class ConnectionMenuController : MonoBehaviour {
 
 	private void CloseMenu() {
 		gameObject.SetActive(false);
+		UIManager.Instance.OnConnectionMenuClosed();
 	}
 
 	private void OnEnable() {

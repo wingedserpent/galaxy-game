@@ -100,12 +100,14 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 					CapturePoint capturePoint = clientGameManager.CapturePoints[reader.ReadUInt16()];
 					reader.ReadSerializableInto(ref capturePoint);
 				}
+			} else if (message.Tag == NetworkTags.ChatMessage) {
+				UIManager.Instance.AddChatMessage(clientGameManager.GameState.GetPlayer(reader.ReadString()), reader.ReadString());
 			} else if (message.Tag == NetworkTags.UnitList) {
 				List<PlayerUnit> playerUnits = new List<PlayerUnit>();
 				while (reader.Position < reader.Length) {
 					playerUnits.Add(reader.ReadSerializable<PlayerUnit>());
 				}
-				clientGameManager.OnUnitListReceived(playerUnits);
+				UIManager.Instance.OnUnitListReceived(playerUnits);
 			} else if (message.Tag == NetworkTags.PlayerJoined) {
 				clientGameManager.OnPlayerJoined(reader.ReadSerializable<Player>());
 			} else if (message.Tag == NetworkTags.PlayerLeft) {
@@ -160,6 +162,16 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 			writer.Write(position.x); writer.Write(position.y); writer.Write(position.z);
 
 			using (Message message = Message.Create(NetworkTags.Construction, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
+
+	public void SendChatMessage(string messageText) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			writer.Write(messageText);
+
+			using (Message message = Message.Create(NetworkTags.ChatMessage, writer)) {
 				client.SendMessage(message, SendMode.Reliable);
 			}
 		}

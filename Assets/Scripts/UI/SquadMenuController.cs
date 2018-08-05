@@ -33,6 +33,7 @@ public class SquadMenuController : MonoBehaviour {
 		UpdateSquadCost(0);
 
 		gameObject.SetActive(false);
+		UIManager.Instance.OnSquadMenuClosed();
 	}
 
 	public void OnUnitListReceived(List<PlayerUnit> playerUnits) {

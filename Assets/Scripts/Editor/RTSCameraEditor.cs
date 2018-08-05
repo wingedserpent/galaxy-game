@@ -54,7 +54,7 @@ namespace RTSCam
 
             if(camera.useScreenEdgeInput)
             {
-                EditorGUILayout.FloatField("Screen edge border size: ", camera.screenEdgeBorder);
+                camera.screenEdgeBorder = EditorGUILayout.FloatField("Screen edge border size: ", camera.screenEdgeBorder);
                 camera.screenEdgeMovementSpeed = EditorGUILayout.FloatField("Screen edge movement speed: ", camera.screenEdgeMovementSpeed);
             }
 
@@ -81,7 +81,7 @@ namespace RTSCam
             }
 
             GUILayout.Label("Follow target", EditorStyles.boldLabel);
-            camera.targetToFollow = EditorGUILayout.ObjectField("Target to follow: ", camera.targetToFollow, typeof(Transform)) as Transform;
+            camera.targetToFollow = EditorGUILayout.ObjectField("Target to follow: ", camera.targetToFollow, typeof(Transform), true) as Transform;
             camera.targetOffset = EditorGUILayout.Vector3Field("Target offset: ", camera.targetOffset);
             camera.followingSpeed = EditorGUILayout.FloatField("Following speed: ", camera.followingSpeed);
         }

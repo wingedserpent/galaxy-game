@@ -27,6 +27,7 @@ public class PlayerInputManager : MonoBehaviour {
 	private ClientNetworkManager clientNetworkManager;
 	private ClientGameManager clientGameManager;
 	private ClientEntityManager clientEntityManager;
+	private UIManager uiManager;
 
 	static Texture2D _whiteTexture;
 	public static Texture2D WhiteTexture {
@@ -49,12 +50,13 @@ public class PlayerInputManager : MonoBehaviour {
 		clientNetworkManager = ClientNetworkManager.Instance;
 		clientGameManager = ClientGameManager.Instance;
 		clientEntityManager = ClientEntityManager.Instance;
+		uiManager = UIManager.Instance;
 
 		rtsCamera = FindObjectOfType<RTSCamera>();
 	}
 	
 	void Update () {
-		if (clientGameManager.IsAcceptingGameInput) {
+		if (!uiManager.IsUIReceivingInput && clientGameManager.IsAcceptingGameInput) {
 			SelectedEntities.RemoveAll(x => x == null);
 
 			//cancel should override all other inputs
@@ -62,6 +64,9 @@ public class PlayerInputManager : MonoBehaviour {
 				DeselectAll(true);
 				LastFocusedEntity = null;
 				rtsCamera.ClearFollowTarget();
+				if (currentConstruction != null) {
+					Destroy(currentConstruction);
+				}
 			} else {
 				if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
 					if (currentConstruction != null) {
@@ -73,7 +78,7 @@ public class PlayerInputManager : MonoBehaviour {
 								IssueConstructionRequest(currentConstructionTypeId, currentConstruction.transform.position);
 							}
 							Destroy(currentConstruction);
-						} else if (Input.GetMouseButtonDown(1) || Input.GetButtonDown("Cancel")) {
+						} else if (Input.GetMouseButtonDown(1)) {
 							Destroy(currentConstruction);
 						} else {
 							bool isValidPlacement = false;

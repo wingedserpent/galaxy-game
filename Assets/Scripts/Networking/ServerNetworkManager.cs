@@ -70,9 +70,20 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 					if (message.Tag == NetworkTags.Command) {
 						entityManager.HandleCommand(reader.ReadSerializable<Command>(), ClientAccountMap[e.Client].PlayFabId);
 					} else if (message.Tag == NetworkTags.Construction) {
-						entityManager.SpawnStructure(serverGameManager.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), 
-							reader.ReadString(), 
+						entityManager.SpawnStructure(serverGameManager.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId),
+							reader.ReadString(),
 							new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+					} else if (message.Tag == NetworkTags.ChatMessage) {
+						string messageText = reader.ReadString();
+
+						using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+							writer.Write(ClientAccountMap[e.Client].PlayFabId);
+							writer.Write(messageText);
+
+							using (Message response = Message.Create(NetworkTags.ChatMessage, writer)) {
+								e.Client.SendMessage(response, SendMode.Reliable);
+							}
+						}
 					} else if (message.Tag == NetworkTags.UnitList) {
 						List<PlayerUnit> playerUnits = entityManager.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
 						if (playerUnits == null) {

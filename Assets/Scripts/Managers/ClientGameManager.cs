@@ -9,12 +9,7 @@ using UnityEngine.SceneManagement;
 public delegate void OnGameStateInitialized();
 
 public class ClientGameManager : Singleton<ClientGameManager> {
-
-	public ConnectionMenuController connectionMenuController;
-	public SquadMenuController squadMenuController;
-	public Text scoreDisplay;
-	public Text resourceDisplay;
-
+	
 	public bool IsOfflineTest { get; private set; }
 	public bool IsAcceptingGameInput { get; private set; }
 	public GameStates ClientState { get; private set; }
@@ -22,6 +17,8 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	public Player MyPlayer { get; private set; }
 	public Dictionary<ushort, CapturePoint> CapturePoints { get; private set; }
 	public Dictionary<ushort, TeamSpawn> TeamSpawns { get; private set; }
+
+	private UIManager uiManager;
 
 	protected override void Awake() {
 		base.Awake();
@@ -31,7 +28,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	}
 
 	private void Start() {
-		connectionMenuController.OpenMenu();
+		uiManager = UIManager.Instance;
 
 		CapturePoints = new Dictionary<ushort, CapturePoint>();
 		foreach (CapturePoint capturePoint in FindObjectsOfType<CapturePoint>()) {
@@ -54,12 +51,12 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 			EndGame();
 		}
 
-		UpdateDisplays();
+		uiManager.UpdateDisplays();
 	}
 
 	private void StartGame(bool hasSpawnedEntities) {
 		if (!hasSpawnedEntities) {
-			squadMenuController.OpenMenu(MyPlayer.MaxSquadCost);
+			uiManager.OpenSquadMenu(MyPlayer.MaxSquadCost);
 		}
 		ClientState = GameStates.GAME_IN_PROGRESS;
 		IsAcceptingGameInput = true;
@@ -77,8 +74,8 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	public void EndGame() {
 		ClientState = GameStates.GAME_COMPLETED;
 		IsAcceptingGameInput = false;
-
-		Debug.Log("Game Over!");
+		
+		uiManager.AddSystemMessage("Game Over!");
 
 		Invoke("RestartGame", 10f);
 	}
@@ -89,7 +86,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 
 	public void OnPlayerJoined(Player player) {
 		GameState.Teams[player.TeamId].Players.Add(player.ID, player);
-		Debug.Log("Player joined: " + player.Name);
+		uiManager.AddSystemMessage("Player joined: " + player.Name);
 	}
 
 	public void OnPlayerLeft(Player player) {
@@ -97,23 +94,10 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 		if (result != null) {
 			GameState.Teams[result.TeamId].Players.Remove(result.ID);
 		}
-		Debug.Log("Player left: " + player.Name);
-	}
-
-	public void OnUnitListReceived(List<PlayerUnit> playerUnits) {
-		squadMenuController.OnUnitListReceived(playerUnits);
+		uiManager.AddSystemMessage("Player left: " + player.Name);
 	}
 
 	public void OnSquadDead() {
-		squadMenuController.OpenMenu();
-	}
-
-	public void UpdateDisplays() {
-		scoreDisplay.text = "Score:\n";
-		foreach (Team team in GameState.Teams.Values) {
-			scoreDisplay.text += team.Name + ": " + team.Score + "\n";
-		}
-
-		resourceDisplay.text = "Resources:\n" + MyPlayer.Resources;
+		uiManager.OpenSquadMenu();
 	}
 }
