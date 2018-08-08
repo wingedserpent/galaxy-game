@@ -16,7 +16,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	public EntityHUD unitHUDPrefab;
 
 	public GameObject projectilePrefab;
-	public Transform projectileSpawnPoint;
+	public List<Transform> projectileSpawnPoints;
 	public List<GameObject> existingProjectiles;
 	public float attackEffectTime = 0f;
 	public AudioClip attackSound;
@@ -61,8 +61,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		AttackTrigger = false;
 		UpdateVisibility = true;
 		IsVisible = true;
-		if (projectileSpawnPoint == null) {
-			projectileSpawnPoint = transform;
+		if (projectileSpawnPoints.Count == 0) {
+			projectileSpawnPoints.Add(transform);
 		}
 	}
 
@@ -332,9 +332,11 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			}
 			if (AttackTarget != null) {
 				if (projectilePrefab != null) {
-					Tweener projectile = Instantiate<GameObject>(projectilePrefab.gameObject, projectileSpawnPoint.position, projectileSpawnPoint.rotation).GetComponent<Tweener>();
-					projectile.target = AttackTarget.transform;
-					projectile.time = attackEffectTime;
+					foreach (Transform spawnPoint in projectileSpawnPoints) {
+						Tweener projectile = Instantiate<GameObject>(projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
+						projectile.target = AttackTarget.transform;
+						projectile.time = attackEffectTime;
+					}
 				}
 				if (existingProjectiles != null) {
 					foreach (GameObject projectileGO in existingProjectiles) {

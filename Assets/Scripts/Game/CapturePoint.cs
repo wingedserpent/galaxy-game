@@ -12,7 +12,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 	public int gainAmount;
 	public float gainFrequency;
 	public LayerMask unitLayers;
-	public Renderer colorable;
+	public Colorable colorable;
 
 	public CaptureState CaptureState { get; set; }
 	public ushort CapturingTeamId { get; set; }
@@ -113,7 +113,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 		OwningTeamId = e.Reader.ReadUInt16();
 
 		if (colorable != null && OwningTeamId != originalOwningTeamId) {
-			colorable.material.color = clientGameManager.GameState.Teams[OwningTeamId].Color;
+			colorable.SetColor(clientGameManager.GameState.Teams[OwningTeamId].Color);
 		}
 	}
 

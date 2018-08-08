@@ -5,15 +5,19 @@ using UnityEngine;
 using System.Data;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 public static class DatabaseManager {
 
-	private static string connectionString = "server=127.0.0.1;uid=unity;pwd=password;database=galaxy;";
+	private static string connectionString = "server=127.0.0.1;uid=unity;pwd=password;database=galaxy;SslMode=none";
 
 	public static PlayerData GetPlayerData(string externalPlayerId) {
 		PlayerData playerData = new PlayerData();
-
+		
 		MySqlConnection connection = new MySqlConnection(connectionString);
+
 		try {
 			connection.Open();
 

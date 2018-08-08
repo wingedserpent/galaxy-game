@@ -56,176 +56,185 @@ public class PlayerInputManager : MonoBehaviour {
 	}
 	
 	void Update () {
-		if (!uiManager.IsUIReceivingInput && clientGameManager.IsAcceptingGameInput) {
-			SelectedEntities.RemoveAll(x => x == null);
+		if (Input.GetButtonUp("Scoreboard")) {
+			uiManager.ClosePlayerList();
+		}
 
-			//cancel should override all other inputs
-			if (Input.GetButtonDown("Cancel")) {
-				DeselectAll(true);
-				LastFocusedEntity = null;
-				rtsCamera.ClearFollowTarget();
-				if (currentConstruction != null) {
-					Destroy(currentConstruction);
-				}
-			} else {
-				if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
+		if (!uiManager.IsUIReceivingInput) {
+			//meta-game input
+			if (Input.GetButtonDown("Scoreboard")) {
+				uiManager.OpenPlayerList();
+			} else if (clientGameManager.IsAcceptingGameInput) {
+				SelectedEntities.RemoveAll(x => x == null);
+
+				//cancel should override all other inputs
+				if (Input.GetButtonDown("Cancel")) {
+					DeselectAll(true);
+					LastFocusedEntity = null;
+					rtsCamera.ClearFollowTarget();
 					if (currentConstruction != null) {
-						//when construction exists, some inputs are handled differently
-						if (Input.GetMouseButtonUp(0) && isConstructionValid) {
-							//check resource cost
-							Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
-							if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-								IssueConstructionRequest(currentConstructionTypeId, currentConstruction.transform.position);
-							}
-							Destroy(currentConstruction);
-						} else if (Input.GetMouseButtonDown(1)) {
-							Destroy(currentConstruction);
-						} else {
-							bool isValidPlacement = false;
-
-							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-							RaycastHit hit;
-							if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayers)) {
-								currentConstruction.transform.position = hit.point;
-
-								//navmesh check
-								NavMeshHit navHit;
-								if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
-									//collision/overlap check
-									Collider[] colliders = Physics.OverlapBox(currentConstructionCollider.bounds.center,
-										currentConstructionCollider.bounds.extents, currentConstructionCollider.transform.rotation, constructionOverlapLayers);
-									if (colliders.Count(x => x != currentConstructionCollider) == 0) {
-										isValidPlacement = true;
-									}
+						Destroy(currentConstruction);
+					}
+				} else {
+					if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
+						if (currentConstruction != null) {
+							//when construction exists, some inputs are handled differently
+							if (Input.GetMouseButtonUp(0) && isConstructionValid) {
+								//check resource cost
+								Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
+								if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
+									IssueConstructionRequest(currentConstructionTypeId, currentConstruction.transform.position);
 								}
-							}
+								Destroy(currentConstruction);
+							} else if (Input.GetMouseButtonDown(1)) {
+								Destroy(currentConstruction);
+							} else {
+								bool isValidPlacement = false;
 
-							SetConstructionValid(isValidPlacement);
-						}
-					} else {
-						//mouse-related inputs
-						if (Input.GetMouseButtonDown(0)) {
-							isSelecting = true;
-							mouseStartPosition = Input.mousePosition;
-						} else if (Input.GetMouseButtonUp(0)) {
-							bool isMultiselecting = Input.GetButton("Multiselect");
+								Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+								RaycastHit hit;
+								if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayers)) {
+									currentConstruction.transform.position = hit.point;
 
-							if (!isMultiselecting) {
-								DeselectAll();
-							}
-
-							if (isSelecting) {
-								Bounds bounds = GetViewportBounds(mouseStartPosition, Input.mousePosition);
-								if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
-									//selection box is large enough, select entities inside
-									IEnumerable<Entity> entitiesToConsider;
-									if (clientGameManager.IsOfflineTest) {
-										entitiesToConsider = FindObjectsOfType<Entity>();
-									} else {
-										entitiesToConsider = clientEntityManager.MySquad.Values;
-									}
-
-									foreach (Entity hitEntity in entitiesToConsider.Where(x => IsWithinBounds(bounds, x.transform.position))) {
-										if (!SelectedEntities.Contains(hitEntity)) {
-											SelectEntity(hitEntity);
-										} else if (isMultiselecting) {
-											DeselectEntity(hitEntity, true);
+									//navmesh check
+									NavMeshHit navHit;
+									if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
+										//collision/overlap check
+										Collider[] colliders = Physics.OverlapBox(currentConstructionCollider.bounds.center,
+											currentConstructionCollider.bounds.extents, currentConstructionCollider.transform.rotation, constructionOverlapLayers);
+										if (colliders.Count(x => x != currentConstructionCollider) == 0) {
+											isValidPlacement = true;
 										}
 									}
-								} else {
-									//selection box is too small, do point selection
-									Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-									RaycastHit hit;
-									if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
-										Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-										if (hitEntity != null && hitEntity.PlayerId == clientGameManager.MyPlayer.ID) {
+								}
+
+								SetConstructionValid(isValidPlacement);
+							}
+						} else {
+							//mouse-related inputs
+							if (Input.GetMouseButtonDown(0)) {
+								isSelecting = true;
+								mouseStartPosition = Input.mousePosition;
+							} else if (Input.GetMouseButtonUp(0)) {
+								bool isMultiselecting = Input.GetButton("Multiselect");
+
+								if (!isMultiselecting) {
+									DeselectAll();
+								}
+
+								if (isSelecting) {
+									Bounds bounds = GetViewportBounds(mouseStartPosition, Input.mousePosition);
+									if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
+										//selection box is large enough, select entities inside
+										IEnumerable<Entity> entitiesToConsider;
+										if (clientGameManager.IsOfflineTest) {
+											entitiesToConsider = FindObjectsOfType<Entity>();
+										} else {
+											entitiesToConsider = clientEntityManager.MySquad.Values;
+										}
+
+										foreach (Entity hitEntity in entitiesToConsider.Where(x => IsWithinBounds(bounds, x.transform.position))) {
 											if (!SelectedEntities.Contains(hitEntity)) {
 												SelectEntity(hitEntity);
 											} else if (isMultiselecting) {
 												DeselectEntity(hitEntity, true);
 											}
 										}
-									}
-								}
-							}
-
-							isSelecting = false;
-						}
-
-						if (Input.GetMouseButtonUp(1)) {
-							if (SelectedEntities.Count > 0) {
-								Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-								RaycastHit hit;
-
-								if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
-									Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-									if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
-										IssueAttackCommand(SelectedEntities
-											.Where(x => x.CanAttack && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
-											.Select(x => x.ID).ToList(), hitEntity.ID);
 									} else {
-										IssueMoveCommand(SelectedEntities.Where(x => x.CanMove).Select(x => x.ID).ToList(), hit.point);
+										//selection box is too small, do point selection
+										Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+										RaycastHit hit;
+										if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
+											Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
+											if (hitEntity != null && hitEntity.PlayerId == clientGameManager.MyPlayer.ID) {
+												if (!SelectedEntities.Contains(hitEntity)) {
+													SelectEntity(hitEntity);
+												} else if (isMultiselecting) {
+													DeselectEntity(hitEntity, true);
+												}
+											}
+										}
+									}
+								}
+
+								isSelecting = false;
+							}
+
+							if (Input.GetMouseButtonUp(1)) {
+								if (SelectedEntities.Count > 0) {
+									Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+									RaycastHit hit;
+
+									if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
+										Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
+										if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
+											IssueAttackCommand(SelectedEntities
+												.Where(x => x.CanAttack && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
+												.Select(x => x.ID).ToList(), hitEntity.ID);
+										} else {
+											IssueMoveCommand(SelectedEntities.Where(x => x.CanMove).Select(x => x.ID).ToList(), hit.point);
+										}
 									}
 								}
 							}
 						}
-					}
-				} //end UI element check
+					} //end UI element check
 
-				//inputs that can be accepted even when hovering mouse over ui element
-				if (Input.GetButtonDown("BuildTurret")) {
-					currentConstructionTypeId = "turret";
-					//check resource cost
-					Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
-					if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-						DeselectAll(true);
-						currentConstruction = clientEntityManager.SpawnConstruction(currentConstructionTypeId);
-						currentConstructionCollider = currentConstruction.GetComponentInChildren<Collider>();
-					}
-				}
-
-				//other selection-based inputs
-				if (SelectedEntities.Count > 0) {
-					if (Input.GetButtonDown("Stop")) {
-						IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
+					//inputs that can be accepted even when hovering mouse over ui element
+					if (Input.GetButtonDown("BuildTurret")) {
+						currentConstructionTypeId = "turret";
+						//check resource cost
+						Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
+						if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
+							DeselectAll(true);
+							currentConstruction = clientEntityManager.SpawnConstruction(currentConstructionTypeId);
+							currentConstructionCollider = currentConstruction.GetComponentInChildren<Collider>();
+						}
 					}
 
-					if (Input.anyKeyDown) {
-						Dictionary<CommandType, List<Entity>> commandEntites = new Dictionary<CommandType, List<Entity>>();
+					//other selection-based inputs
+					if (SelectedEntities.Count > 0) {
+						if (Input.GetButtonDown("Stop")) {
+							IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
+						}
 
-						foreach (Entity selectedEntity in SelectedEntities) {
-							CommandType resultCommandType = selectedEntity.EntityController.GetCommandTypeFromInput();
-							if (resultCommandType != CommandType.NONE) {
-								if (!commandEntites.ContainsKey(resultCommandType)) {
-									commandEntites.Add(resultCommandType, new List<Entity>());
+						if (Input.anyKeyDown) {
+							Dictionary<CommandType, List<Entity>> commandEntites = new Dictionary<CommandType, List<Entity>>();
+
+							foreach (Entity selectedEntity in SelectedEntities) {
+								CommandType resultCommandType = selectedEntity.EntityController.GetCommandTypeFromInput();
+								if (resultCommandType != CommandType.NONE) {
+									if (!commandEntites.ContainsKey(resultCommandType)) {
+										commandEntites.Add(resultCommandType, new List<Entity>());
+									}
+									commandEntites[resultCommandType].Add(selectedEntity);
 								}
-								commandEntites[resultCommandType].Add(selectedEntity);
+							}
+
+							foreach (KeyValuePair<CommandType, List<Entity>> commandEntity in commandEntites) {
+								IssueAbilityCommand(commandEntity.Value.Select(x => x.ID).ToList(), commandEntity.Key);
 							}
 						}
 
-						foreach (KeyValuePair<CommandType, List<Entity>> commandEntity in commandEntites) {
-							IssueAbilityCommand(commandEntity.Value.Select(x => x.ID).ToList(), commandEntity.Key);
-						}
-					}
-
-					if (Input.GetButtonDown("CameraFocus")) {
-						if (SelectedEntities.Count > 0) {
-							if (SelectedEntities[0].Equals(LastFocusedEntity)) {
-								LastFocusedEntity = SelectedEntities[0];
-								rtsCamera.SetFollowTarget(LastFocusedEntity.transform);
-							} else {
-								LastFocusedEntity = SelectedEntities[0];
-								rtsCamera.RefocusOn(LastFocusedEntity.transform.position);
+						if (Input.GetButtonDown("CameraFocus")) {
+							if (SelectedEntities.Count > 0) {
+								if (SelectedEntities[0].Equals(LastFocusedEntity)) {
+									LastFocusedEntity = SelectedEntities[0];
+									rtsCamera.SetFollowTarget(LastFocusedEntity.transform);
+								} else {
+									LastFocusedEntity = SelectedEntities[0];
+									rtsCamera.RefocusOn(LastFocusedEntity.transform.position);
+								}
 							}
 						}
 					}
-				}
 
-				if (SelectedEntities.Count == 0 || !SelectedEntities[0].Equals(LastFocusedEntity)) {
-					LastFocusedEntity = null;
-					rtsCamera.ClearFollowTarget();
-				}
-			} //end non-cancel
+					if (SelectedEntities.Count == 0 || !SelectedEntities[0].Equals(LastFocusedEntity)) {
+						LastFocusedEntity = null;
+						rtsCamera.ClearFollowTarget();
+					}
+				} //end non-cancel
+			}
 		}
 	}
 

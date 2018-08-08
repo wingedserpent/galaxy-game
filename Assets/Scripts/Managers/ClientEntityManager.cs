@@ -41,6 +41,7 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public void RegisterEntity(Entity entity) {
 		if (!entities.ContainsKey(entity.ID)) {
 			ScrubEntity(entity);
+			ColorizeEntity(entity);
 			entities.Add(entity.ID, entity);
 
 			if (entity.PlayerId == clientGameManager.MyPlayer.ID) {
@@ -49,6 +50,13 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		} else {
 			Debug.LogWarning("An entity with ID: " + entity.ID + " already exists! Destroying new entity.");
 			Destroy(entity.gameObject);
+		}
+	}
+
+	protected void ColorizeEntity(Entity entity) {
+		Color teamColor = clientGameManager.GameState.Teams[entity.TeamId].Color;
+		foreach (Colorable colorable in entity.GetComponentsInChildren<Colorable>()) {
+			colorable.SetColor(teamColor);
 		}
 	}
 

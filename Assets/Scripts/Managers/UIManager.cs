@@ -11,6 +11,7 @@ public class UIManager : Singleton<UIManager> {
 	public ConnectionMenuController connectionMenuController;
 	public SquadMenuController squadMenuController;
 	public ChatWindowController chatWindowController;
+	public PlayerListController playerListController;
 	public Text scoreDisplay;
 	public Text resourceDisplay;
 
@@ -77,5 +78,15 @@ public class UIManager : Singleton<UIManager> {
 
 	public void OnChatInputFocusChange(bool isFocused) {
 		IsUIReceivingInput = isFocused;
+	}
+
+	public void OpenPlayerList() {
+		IsUIReceivingInput = true;
+		playerListController.OpenWindow();
+	}
+
+	public void ClosePlayerList() {
+		playerListController.CloseWindow();
+		IsUIReceivingInput = false;
 	}
 }

@@ -11,6 +11,7 @@ public class Tweener : MonoBehaviour {
 	public LeanTweenType easeType = LeanTweenType.notUsed;
 	public bool resetOnComplete = false;
 	public bool destroyOnComplete = false;
+	public GameObject spawnOnComplete;
 
 	private bool isStarted = false;
 	private Vector3 startLocalPos;
@@ -45,6 +46,9 @@ public class Tweener : MonoBehaviour {
 	}
 
 	private void OnComplete() {
+		if (spawnOnComplete != null) {
+			Instantiate<GameObject>(spawnOnComplete, transform.position, Quaternion.identity);
+		}
 		if (resetOnComplete) {
 			transform.localPosition = startLocalPos;
 			enabled = false;
