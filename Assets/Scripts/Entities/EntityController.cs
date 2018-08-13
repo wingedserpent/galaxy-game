@@ -119,6 +119,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		return (from target in vision.VisibleTargets.Where(x => x != null)
 				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
 				where target.TeamId != entity.TeamId && distance <= entity.attackRange
+					&& target.isInAir ? entity.canAttackAir : entity.canAttackGround
 				orderby distance ascending
 				select target).FirstOrDefault();
 	}
@@ -220,7 +221,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 		if (groupMovementCenter != null) {
 			//maintain an offset from the center of the group if using group movement
-			destination += (transform.position - (Vector3)groupMovementCenter).normalized * agent.radius * 3;
+			destination += (transform.position - (Vector3)groupMovementCenter).normalized * agent.radius * 2;
 		}
 
 		NavMeshHit navMeshHit;

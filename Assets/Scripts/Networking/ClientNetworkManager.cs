@@ -78,29 +78,34 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 	void DarkRift_MessageReceived(object sender, MessageReceivedEventArgs e) {
 		using (Message message = e.GetMessage())
 		using (DarkRiftReader reader = message.GetReader()) {
-			if (message.Tag == NetworkTags.EntityUpdate) {
-				while (reader.Position < reader.Length) {
-					string entityId = reader.ReadString();
-					string entityTypeId = reader.ReadString();
-					Entity entity = entityManager.GetEntity(entityId);
-					if (entity == null) {
-						entity = entityManager.CreateEntity(entityTypeId);
-						reader.ReadSerializableInto(ref entity); //must populate entity before registering since registration depends on entity data
-						entityManager.RegisterEntity(entity);
-					} else {
-						reader.ReadSerializableInto(ref entity);
+			if (clientGameManager.ClientState == GameStates.GAME_IN_PROGRESS || clientGameManager.ClientState == GameStates.WAITING_FOR_PLAYERS) {
+				//game is in progress
+				if (message.Tag == NetworkTags.EntityUpdate) {
+					while (reader.Position < reader.Length) {
+						string entityId = reader.ReadString();
+						string entityTypeId = reader.ReadString();
+						Entity entity = entityManager.GetEntity(entityId);
+						if (entity == null) {
+							entity = entityManager.CreateEntity(entityTypeId);
+							reader.ReadSerializableInto(ref entity); //must populate entity before registering since registration depends on entity data
+							entityManager.RegisterEntity(entity);
+						} else {
+							reader.ReadSerializableInto(ref entity);
+						}
 					}
+				} else if (message.Tag == NetworkTags.EntityDeath) {
+					entityManager.HandleEntityDeath(reader.ReadString());
+				} else if (message.Tag == NetworkTags.CapturePoint) {
+					while (reader.Position < reader.Length) {
+						CapturePoint capturePoint = clientGameManager.CapturePoints[reader.ReadUInt16()];
+						reader.ReadSerializableInto(ref capturePoint);
+					}
+				} else if (message.Tag == NetworkTags.GameState) {
+					clientGameManager.UpdateGameState(reader.ReadSerializable<GameState>(), reader.ReadBoolean());
 				}
-			} else if (message.Tag == NetworkTags.EntityDeath) {
-				entityManager.HandleEntityDeath(reader.ReadString());
-			} else if (message.Tag == NetworkTags.GameState) {
-				clientGameManager.UpdateGameState(reader.ReadSerializable<GameState>(), reader.ReadBoolean());
-			} else if (message.Tag == NetworkTags.CapturePoint) {
-				while (reader.Position < reader.Length) {
-					CapturePoint capturePoint = clientGameManager.CapturePoints[reader.ReadUInt16()];
-					reader.ReadSerializableInto(ref capturePoint);
-				}
-			} else if (message.Tag == NetworkTags.ChatMessage) {
+			}
+
+			if (message.Tag == NetworkTags.ChatMessage) {
 				UIManager.Instance.AddChatMessage(clientGameManager.GameState.GetPlayer(reader.ReadString()), reader.ReadString());
 			} else if (message.Tag == NetworkTags.UnitList) {
 				List<PlayerUnit> playerUnits = new List<PlayerUnit>();

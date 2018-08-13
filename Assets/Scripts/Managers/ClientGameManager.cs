@@ -75,13 +75,13 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 		ClientState = GameStates.GAME_COMPLETED;
 		IsAcceptingGameInput = false;
 		
-		uiManager.AddSystemMessage("Game Over!");
+		uiManager.AddSystemMessage("Game Over! Restarting in 10 seconds...");
 
 		Invoke("RestartGame", 10f);
 	}
 
 	private void RestartGame() {
-		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
 	}
 
 	public void OnPlayerJoined(Player player) {

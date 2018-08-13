@@ -22,6 +22,8 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	public string ID { get; set; }
 	public string PlayerId { get; set; }
 	public ushort TeamId { get; set; }
+	public Weapon Weapon { get; set; }
+	public List<Equipment> Equipment { get; set; }
 
 	private EntityController _entityController;
 	public EntityController EntityController {

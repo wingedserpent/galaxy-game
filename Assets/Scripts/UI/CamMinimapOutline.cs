@@ -17,6 +17,7 @@ public class CamMinimapOutline : MonoBehaviour {
 
 	void Start () {
 		cam = Camera.main;
+
 		leftLineRotOffset = leftLine.rotation;
 		rightLineRotOffset = rightLine.rotation;
 	}
@@ -27,18 +28,18 @@ public class CamMinimapOutline : MonoBehaviour {
 		Vector3 bottomRightPos = GetGroundPos(cam.ViewportPointToRay(new Vector3(1, 0, 0)));
 		Vector3 bottomLeftPos = GetGroundPos(cam.ViewportPointToRay(new Vector3(0, 0, 0)));
 
-		topLine.localScale = new Vector3(topRightPos.x - topLeftPos.x, lineWidth, lineWidth);
+		topLine.localScale = new Vector3(Vector3.Distance(topRightPos, topLeftPos), lineWidth, lineWidth);
 		topLine.position = (topRightPos + topLeftPos) / 2;
 
-		bottomLine.localScale = new Vector3(bottomRightPos.x - bottomLeftPos.x, lineWidth, lineWidth);
+		bottomLine.localScale = new Vector3(Vector3.Distance(bottomRightPos, bottomLeftPos), lineWidth, lineWidth);
 		bottomLine.position = (bottomRightPos + bottomLeftPos) / 2;
 
-		leftLine.localScale = new Vector3(lineWidth, topLeftPos.z - bottomLeftPos.z, lineWidth);
+		leftLine.localScale = new Vector3(lineWidth, Vector3.Distance(topLeftPos, bottomLeftPos), lineWidth);
 		leftLine.position = (topLeftPos + bottomLeftPos) / 2;
 		leftLine.LookAt(topLeftPos);
 		leftLine.rotation *= leftLineRotOffset;
 
-		rightLine.localScale = new Vector3(lineWidth, topRightPos.z - bottomRightPos.z, lineWidth);
+		rightLine.localScale = new Vector3(lineWidth, Vector3.Distance(topRightPos, bottomRightPos), lineWidth);
 		rightLine.position = (topRightPos + bottomRightPos) / 2;
 		rightLine.LookAt(topRightPos);
 		rightLine.rotation *= rightLineRotOffset;

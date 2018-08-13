@@ -25,4 +25,10 @@ public class StructureController : EntityController {
 
 		base.Update();
 	}
+
+	protected override void HandleAIStates() {
+		if (constructionTimer <= 0f) {
+			base.HandleAIStates();
+		}
+	}
 }

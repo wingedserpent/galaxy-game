@@ -17,7 +17,7 @@ public class UIManager : Singleton<UIManager> {
 
 	public bool IsUIReceivingInput { get; private set; }
 
-	private ClientGameManager clientGamaManager;
+	private ClientGameManager clientGameManager;
 
 	protected override void Awake() {
 		base.Awake();
@@ -26,7 +26,7 @@ public class UIManager : Singleton<UIManager> {
 	}
 
 	private void Start() {
-		clientGamaManager = ClientGameManager.Instance;
+		clientGameManager = ClientGameManager.Instance;
 
 		OpenConnectionMenu();
 	}
@@ -56,11 +56,11 @@ public class UIManager : Singleton<UIManager> {
 
 	public void UpdateDisplays() {
 		scoreDisplay.text = "Score:\n";
-		foreach (Team team in clientGamaManager.GameState.Teams.Values) {
+		foreach (Team team in clientGameManager.GameState.Teams.Values) {
 			scoreDisplay.text += team.Name + ": " + team.Score + "\n";
 		}
 
-		resourceDisplay.text = "Resources:\n" + clientGamaManager.MyPlayer.Resources;
+		resourceDisplay.text = "Resources:\n" + clientGameManager.MyPlayer.Resources;
 	}
 
 	public void OpenChatWindow() {

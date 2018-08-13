@@ -1364,7 +1364,7 @@ Transform:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 748566386}
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1374,7 +1374,7 @@ Transform:
   - {fileID: 2007230928}
   m_Father: {fileID: 1201808660}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!1 &770859176
 GameObject:
   m_ObjectHideFlags: 0
@@ -1720,6 +1720,20 @@ Prefab:
     - target: {fileID: 4850751516297990, guid: da195e3cf73553d4a88e8ccdd926579a, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1276633922704500, guid: da195e3cf73553d4a88e8ccdd926579a, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114740496643564118, guid: da195e3cf73553d4a88e8ccdd926579a,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 119829474156600428, guid: da195e3cf73553d4a88e8ccdd926579a,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: da195e3cf73553d4a88e8ccdd926579a, type: 2}
@@ -2480,14 +2494,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1201808656}
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalRotation: {x: 0.60876137, y: 0, z: 0, w: 0.7933534}
   m_LocalPosition: {x: 0, y: 40, z: -30}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 748566387}
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 75, y: 0, z: 0}
 --- !u!114 &1201808661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2503,7 +2517,7 @@ MonoBehaviour:
   bottomLine: {fileID: 1150602474}
   leftLine: {fileID: 1026296230}
   rightLine: {fileID: 2007230928}
-  lineWidth: 2
+  lineWidth: 1
   groundMask:
     serializedVersion: 2
     m_Bits: 2064
@@ -2613,7 +2627,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ef8c68bade09b41aca258d42a632f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastTab: 2
+  lastTab: 0
   movementSettingsFoldout: 0
   zoomingSettingsFoldout: 0
   rotationSettingsFoldout: 0
@@ -2623,7 +2637,7 @@ MonoBehaviour:
   inputSettingsFoldout: 0
   useFixedUpdate: 0
   keyboardMovementSpeed: 30
-  screenEdgeMovementSpeed: 20
+  screenEdgeMovementSpeed: 30
   followingSpeed: 100
   rotationSpeed: 40
   panningSpeed: 20
@@ -2638,14 +2652,14 @@ MonoBehaviour:
   maxZoom: 60
   autoHeightDampening: 5
   keyboardZoomingSensitivity: 5
-  scrollWheelZoomingSensitivity: 25
+  scrollWheelZoomingSensitivity: 30
   limitMap: 0
   limitX: 50
   limitY: 50
   targetToFollow: {fileID: 0}
   targetOffset: {x: 0, y: 0, z: 0}
   useScreenEdgeInput: 1
-  screenEdgeBorder: 10
+  screenEdgeBorder: 20
   useKeyboardInput: 1
   horizontalAxis: Horizontal
   verticalAxis: Vertical
@@ -3376,7 +3390,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 50
+  orthographic size: 100
   m_Depth: 10
   m_CullingMask:
     serializedVersion: 2
@@ -3386,10 +3400,10 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
-  m_AllowMSAA: 0
+  m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
+  m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
 --- !u!4 &1782120328

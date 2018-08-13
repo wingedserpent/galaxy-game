@@ -53,7 +53,7 @@ namespace RTSCam
         public float keyboardZoomingSensitivity = 2f;
         public float scrollWheelZoomingSensitivity = 25f;
 
-		private float heightZoomPos = 0; //value in range (0, 1) used as t in Mathf.Lerp
+		//private float heightZoomPos = 0; //value in range (0, 1) used as t in Mathf.Lerp
 		private float zoomPos = 0; //value in range (0, 1) used as t in Mathf.Lerp
 
         #endregion
@@ -233,7 +233,7 @@ namespace RTSCam
                 desiredMove = m_Transform.InverseTransformDirection(desiredMove);
             }
 
-            if (useScreenEdgeInput && desiredMove == Vector3.zero)
+            if (useScreenEdgeInput && Screen.fullScreen && desiredMove == Vector3.zero)
             {
                 desiredMove = new Vector3();
 

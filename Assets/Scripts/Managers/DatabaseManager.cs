@@ -45,6 +45,7 @@ public static class DatabaseManager {
 
 	public static List<PlayerUnit> GetPlayerUnits(string externalPlayerId) {
 		List<PlayerUnit> playerUnits = new List<PlayerUnit>();
+		Dictionary<string, List<PlayerUnit>> unitsByTypeMap = new Dictionary<string, List<PlayerUnit>>();
 
 		MySqlConnection connection = new MySqlConnection(connectionString);
 		try {
@@ -70,8 +71,15 @@ public static class DatabaseManager {
 				playerUnit.MaxHealth = reader.GetInt32("health");
 				playerUnit.CurrentHealth = playerUnit.MaxHealth;
 				playerUnits.Add(playerUnit);
+
+				if (!unitsByTypeMap.ContainsKey(playerUnit.UnitType)) {
+					unitsByTypeMap.Add(playerUnit.UnitType, new List<PlayerUnit>());
+				}
+				unitsByTypeMap[playerUnit.UnitType].Add(playerUnit);
 			}
 			reader.Close();
+
+			PopulateEquipment(unitsByTypeMap, connection);
 		} catch (Exception ex) {
 			Debug.LogError(ex.ToString());
 		} finally {
@@ -79,5 +87,81 @@ public static class DatabaseManager {
 		}
 
 		return playerUnits;
+	}
+
+	private static void PopulateEquipment(Dictionary<string, List<PlayerUnit>> unitsByTypeMap, MySqlConnection connection) {
+		foreach (KeyValuePair<string, List<PlayerUnit>> unitsByType in unitsByTypeMap) {
+			List<Weapon> weapons = GetWeapons(unitsByType.Key, connection);
+			List<Equipment> equipments = GetEquipment(unitsByType.Key, connection);
+			foreach (PlayerUnit playerUnit in unitsByType.Value) {
+				playerUnit.WeaponOptions = weapons;
+				playerUnit.EquipmentOptions = equipments;
+			}
+		}
+	}
+
+	private static List<Weapon> GetWeapons(string unitType, MySqlConnection connection) {
+		List<Weapon> weapons = new List<Weapon>();
+
+		try {
+			string sql = "SELECT w.* " +
+				"FROM unit_type_weapon w " +
+				"WHERE w.unit_type = @unitType " +
+				"ORDER BY w.squad_cost ASC";
+			MySqlCommand command = new MySqlCommand(sql, connection);
+			command.Parameters.AddWithValue("unitType", unitType);
+			MySqlDataReader reader = command.ExecuteReader();
+
+			while (reader.Read()) {
+				Weapon weapon = new Weapon();
+				weapon.Name = reader.GetString("name");
+				weapon.SquadCost = reader.GetInt32("squad_cost");
+				weapon.Range = reader.GetFloat("range");
+				weapon.Damage = reader.GetInt32("damage");
+				weapon.ShieldDamage = reader.GetInt32("shield_damage");
+				weapon.AttackRate = reader.GetFloat("attack_rate");
+				weapon.SplashRadius = reader.GetFloat("splash_radius");
+				weapon.MaxDamage = reader.GetInt32("max_damage");
+				weapon.MaxShieldDamage = reader.GetInt32("max_shield_damage");
+				weapon.DamageIncreaseRate = reader.GetFloat("damage_increase_rate");
+				weapons.Add(weapon);
+			}
+		} catch (Exception ex) {
+			Debug.LogError(ex.ToString());
+		}
+
+		return weapons;
+	}
+
+	private static List<Equipment> GetEquipment(string unitType, MySqlConnection connection) {
+		List<Equipment> equipments = new List<Equipment>();
+
+		try {
+			string sql = "SELECT e.* " +
+				"FROM unit_type_equipment e " +
+				"WHERE e.unit_type = @unitType " +
+				"ORDER BY e.squad_cost ASC";
+			MySqlCommand command = new MySqlCommand(sql, connection);
+			command.Parameters.AddWithValue("unitType", unitType);
+			MySqlDataReader reader = command.ExecuteReader();
+
+			while (reader.Read()) {
+				Equipment equipment = new Equipment();
+				equipment.EquipmentType = reader.GetString("equipment_type");
+				equipment.Name = reader.GetString("name");
+				equipment.SquadCost = reader.GetInt32("squad_cost");
+				equipment.Health = reader.GetInt32("health");
+				equipment.Shield = reader.GetInt32("shield");
+				equipment.ShieldRecharge = reader.GetFloat("shield_recharge");
+				equipment.MoveSpeed = reader.GetFloat("move_speed");
+				equipment.VisionRange = reader.GetFloat("vision_range");
+				equipment.Ability = reader.GetString("ability");
+				equipments.Add(equipment);
+			}
+		} catch (Exception ex) {
+			Debug.LogError(ex.ToString());
+		}
+
+		return equipments;
 	}
 }

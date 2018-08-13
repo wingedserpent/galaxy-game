@@ -16,6 +16,13 @@ public class PlayerUnit : IDarkRiftSerializable {
 	public int SquadCost { get; set; }
 	public int MaxHealth { get; set; }
 	public int CurrentHealth { get; set; }
+	public List<Weapon> WeaponOptions { get; set; }
+	public List<Equipment> EquipmentOptions { get; set; }
+
+	public PlayerUnit() {
+		WeaponOptions = new List<Weapon>();
+		EquipmentOptions = new List<Equipment>();
+	}
 
 	public void Deserialize(DeserializeEvent e) {
 		PlayerId = e.Reader.ReadString();
@@ -25,6 +32,13 @@ public class PlayerUnit : IDarkRiftSerializable {
 		SquadCost = e.Reader.ReadInt32();
 		MaxHealth = e.Reader.ReadInt32();
 		CurrentHealth = e.Reader.ReadInt32();
+
+		for (int i=0; i < e.Reader.ReadInt32(); i++) {
+			WeaponOptions.Add(e.Reader.ReadSerializable<Weapon>());
+		}
+		for (int i = 0; i < e.Reader.ReadInt32(); i++) {
+			EquipmentOptions.Add(e.Reader.ReadSerializable<Equipment>());
+		}
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -35,5 +49,14 @@ public class PlayerUnit : IDarkRiftSerializable {
 		e.Writer.Write(SquadCost);
 		e.Writer.Write(MaxHealth);
 		e.Writer.Write(CurrentHealth);
+
+		e.Writer.Write(WeaponOptions.Count);
+		foreach (Weapon weaponOption in WeaponOptions) {
+			e.Writer.Write(weaponOption);
+		}
+		e.Writer.Write(EquipmentOptions.Count);
+		foreach (Equipment equipmentOption in EquipmentOptions) {
+			e.Writer.Write(equipmentOption);
+		}
 	}
 }

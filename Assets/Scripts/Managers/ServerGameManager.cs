@@ -75,7 +75,7 @@ public class ServerGameManager : Singleton<ServerGameManager> {
 		GameState.CurrentState = GameStates.GAME_COMPLETED;
 		serverNetworkManager.EndGame(GameState);
 
-		Invoke("RestartGame", 10f);
+		Invoke("RestartGame", 5f);
 	}
 
 	private void RestartGame() {

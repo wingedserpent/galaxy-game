@@ -15,9 +15,6 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 	public Dictionary<IClient, UserAccountInfo> ClientAccountMap { get; private set; }
 
 	private Dictionary<string, IClient> tempTicketMap = new Dictionary<string, IClient>();
-	private ServerPlayFabManager serverPlayFabManager;
-	private ServerGameManager serverGameManager;
-	private ServerEntityManager entityManager;
 
 	protected override void Awake() {
 		base.Awake();
@@ -26,10 +23,6 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 	}
 
 	private void Start() {
-		serverPlayFabManager = ServerPlayFabManager.Instance;
-		serverGameManager = ServerGameManager.Instance;
-		entityManager = ServerEntityManager.Instance;
-		
 		server.Server.ClientManager.ClientConnected += DarkRift_OnClientConnected;
 		server.Server.ClientManager.ClientDisconnected += DarkRift_OnClientDisconnected;
 	}
@@ -40,23 +33,24 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 
 	private void DarkRift_OnClientDisconnected(object sender, ClientDisconnectedEventArgs e) {
 		if (ClientAccountMap.ContainsKey(e.Client)) {
-			Player player = serverGameManager.PlayerLeft(ClientAccountMap[e.Client].PlayFabId);
+			Player player = ServerGameManager.Instance.PlayerLeft(ClientAccountMap[e.Client].PlayFabId);
 
-			serverPlayFabManager.NotifyPlayerLeft(ClientAccountMap[e.Client].PlayFabId);
+			ServerPlayFabManager.Instance.NotifyPlayerLeft(ClientAccountMap[e.Client].PlayFabId);
 			ClientConnectionMap.Remove(ClientAccountMap[e.Client].PlayFabId);
 			ClientAccountMap.Remove(e.Client);
 
-			//Alert other players of the disconnection
-			using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
-				writer.Write(player);
+			if (player != null) {
+				//Alert other players of the disconnection
+				using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+					writer.Write(player);
 
-				using (Message message = Message.Create(NetworkTags.PlayerLeft, writer)) {
-					foreach (IClient otherClient in ClientAccountMap.Keys) {
-						otherClient.SendMessage(message, SendMode.Reliable);
+					using (Message message = Message.Create(NetworkTags.PlayerLeft, writer)) {
+						foreach (IClient otherClient in ClientAccountMap.Keys) {
+							otherClient.SendMessage(message, SendMode.Reliable);
+						}
 					}
 				}
 			}
-
 		}
 	}
 
@@ -65,12 +59,12 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 		using (DarkRiftReader reader = message.GetReader()) {
 			if (ClientAccountMap.ContainsKey(e.Client)) {
 				//valid, joined player
-				if (serverGameManager.GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
+				if (ServerGameManager.Instance.GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
 					//game is in progress
 					if (message.Tag == NetworkTags.Command) {
-						entityManager.HandleCommand(reader.ReadSerializable<Command>(), ClientAccountMap[e.Client].PlayFabId);
+						ServerEntityManager.Instance.HandleCommand(reader.ReadSerializable<Command>(), ClientAccountMap[e.Client].PlayFabId);
 					} else if (message.Tag == NetworkTags.Construction) {
-						entityManager.SpawnStructure(serverGameManager.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId),
+						ServerEntityManager.Instance.SpawnStructure(ServerGameManager.Instance.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId),
 							reader.ReadString(),
 							new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 					} else if (message.Tag == NetworkTags.ChatMessage) {
@@ -85,10 +79,10 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 							}
 						}
 					} else if (message.Tag == NetworkTags.UnitList) {
-						List<PlayerUnit> playerUnits = entityManager.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
+						List<PlayerUnit> playerUnits = ServerEntityManager.Instance.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
 						if (playerUnits == null) {
 							playerUnits = DatabaseManager.GetPlayerUnits(ClientAccountMap[e.Client].PlayFabId);
-							entityManager.SetPlayerUnits(ClientAccountMap[e.Client].PlayFabId, playerUnits);
+							ServerEntityManager.Instance.SetPlayerUnits(ClientAccountMap[e.Client].PlayFabId, playerUnits);
 						}
 
 						using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
@@ -102,15 +96,15 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 						}
 					} else if (message.Tag == NetworkTags.SquadSelection) {
 						int[] unitIds = reader.ReadInt32s();
-						List<PlayerUnit> playerUnits = entityManager.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
-						entityManager.SpawnPlayerSquad(serverGameManager.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), playerUnits.Where(x => unitIds.Contains(x.PlayerUnitId)).ToList());
+						List<PlayerUnit> playerUnits = ServerEntityManager.Instance.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
+						ServerEntityManager.Instance.SpawnPlayerSquad(ServerGameManager.Instance.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), playerUnits.Where(x => unitIds.Contains(x.PlayerUnitId)).ToList());
 					}
 				}
 			} else if (message.Tag == NetworkTags.Connection) {
 				//Matchmaker join request from a client, submit ticket to PlayFab
 				string matchmakerTicket = reader.ReadString();
 				tempTicketMap.Add(matchmakerTicket, e.Client);
-				serverPlayFabManager.RedeemMatchmakerTicket(matchmakerTicket);
+				ServerPlayFabManager.Instance.RedeemMatchmakerTicket(matchmakerTicket);
 			} 
 		}
 	}
@@ -138,7 +132,7 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 				ClientAccountMap.Add(client, userInfo);
 			}
 
-			Player player = serverGameManager.PlayerJoined(userInfo.PlayFabId, userInfo.TitleInfo.DisplayName);
+			Player player = ServerGameManager.Instance.PlayerJoined(userInfo.PlayFabId, userInfo.TitleInfo.DisplayName);
 			PlayerData playerData = DatabaseManager.GetPlayerData(userInfo.PlayFabId);
 			player.MaxSquadCost = playerData.MaxSquadCost;
 
@@ -157,16 +151,16 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 
 			//Send current game state to newly-joined player
 			using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
-				writer.Write(serverGameManager.GameState);
+				writer.Write(ServerGameManager.Instance.GameState);
 				//whether player already has entities spawned
-				writer.Write(entityManager.GetUnitsForPlayer(player.ID).Count > 0);
+				writer.Write(ServerEntityManager.Instance.GetUnitsForPlayer(player.ID).Count > 0);
 
 				using (Message message = Message.Create(NetworkTags.GameState, writer)) {
 					client.SendMessage(message, SendMode.Reliable);
 				}
 			}
 
-			serverGameManager.TryToStartGame();
+			ServerGameManager.Instance.TryToStartGame();
 		}
 	}
 
