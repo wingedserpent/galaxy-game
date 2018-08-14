@@ -14,12 +14,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	public AudioClip damagedSound;
 	public AudioClip deathSound;
 	public EntityHUD unitHUDPrefab;
-
-	public GameObject projectilePrefab;
-	public List<Transform> projectileSpawnPoints;
-	public List<GameObject> existingProjectiles;
-	public float attackEffectTime = 0f;
-	public AudioClip attackSound;
+	
+	public List<WeaponSetting> weaponSettings;
 
 	public AIState State { get; set; }
 	public bool DamagedTrigger { get; set; }
@@ -61,9 +57,6 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		AttackTrigger = false;
 		UpdateVisibility = true;
 		IsVisible = true;
-		if (projectileSpawnPoints.Count == 0) {
-			projectileSpawnPoints.Add(transform);
-		}
 	}
 
 	protected virtual void Start() {
@@ -118,7 +111,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected Entity CheckForTargets() {
 		return (from target in vision.VisibleTargets.Where(x => x != null)
 				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
-				where target.TeamId != entity.TeamId && distance <= entity.attackRange
+				where target.TeamId != entity.TeamId && distance <= entity.Weapon.Range
 					&& target.isInAir ? entity.canAttackAir : entity.canAttackGround
 				orderby distance ascending
 				select target).FirstOrDefault();
@@ -149,7 +142,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 									   AttackTarget.transform.position.z);
 			transform.LookAt(lookTarget);
 
-			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.attackRange) {
+			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.Weapon.Range) {
 				if (entity.CanMove) {
 					//out of range, move into range if responding to an explicit attack command
 					if (isRespondingToAttackCommand) {
@@ -166,7 +159,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 				if (!isDelayingAttack && attackCooldown <= 0f) {
 					//do the attack after a delay (for visual effects)
-					StartCoroutine(DelayedAttack(attackEffectTime, AttackTarget));
+					StartCoroutine(DelayedAttack(GetActiveWeaponSetting().attackEffectTime, AttackTarget));
 					AttackTrigger = true;
 				}
 			}
@@ -180,14 +173,14 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (attackTarget != null) {
-			bool targetDied = attackTarget.EntityController.TakeDamage(entity.attackDamage);
+			bool targetDied = attackTarget.EntityController.TakeDamage(entity.Weapon.Damage);
 			if (targetDied) {
 				AttackTarget = null;
 				State = AIState.IDLE;
 			}
 		}
 
-		attackCooldown = entity.attackSpeed - attackEffectTime;
+		attackCooldown = entity.Weapon.AttackRate - GetActiveWeaponSetting().attackEffectTime;
 		isDelayingAttack = false;
 	}
 
@@ -313,6 +306,10 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
+	protected WeaponSetting GetActiveWeaponSetting() {
+		return weaponSettings.Where(x => x.weaponType.Equals(entity.Weapon.WeaponType)).FirstOrDefault();
+	}
+
 	protected virtual void UpdateEffects() {
 		if (DamagedTrigger) {
 			if (animator != null && animator.enabled) {
@@ -325,25 +322,26 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (entity.CanAttack && AttackTrigger) {
+			WeaponSetting activeWeaponSetting = GetActiveWeaponSetting();
 			if (animator != null && animator.enabled) {
 				animator.SetTrigger("attack");
 			}
 			if (audioSource != null) {
-				audioSource.PlayOneShot(attackSound);
+				audioSource.PlayOneShot(activeWeaponSetting.attackSound);
 			}
 			if (AttackTarget != null) {
-				if (projectilePrefab != null) {
-					foreach (Transform spawnPoint in projectileSpawnPoints) {
-						Tweener projectile = Instantiate<GameObject>(projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
+				if (activeWeaponSetting.projectilePrefab != null) {
+					foreach (Transform spawnPoint in activeWeaponSetting.projectileSpawnPoints.Append(transform)) {
+						Tweener projectile = Instantiate<GameObject>(activeWeaponSetting.projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
 						projectile.target = AttackTarget.transform;
-						projectile.time = attackEffectTime;
+						projectile.time = activeWeaponSetting.attackEffectTime;
 					}
 				}
-				if (existingProjectiles != null) {
-					foreach (GameObject projectileGO in existingProjectiles) {
+				if (activeWeaponSetting.existingProjectiles != null) {
+					foreach (GameObject projectileGO in activeWeaponSetting.existingProjectiles) {
 						Tweener projectile = projectileGO.GetComponent<Tweener>();
 						projectile.target = AttackTarget.transform;
-						projectile.time = attackEffectTime;
+						projectile.time = activeWeaponSetting.attackEffectTime;
 						projectile.enabled = true;
 					}
 				}

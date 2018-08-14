@@ -48,7 +48,7 @@ public class EntityHUD : MonoBehaviour {
 	}
 
 	private void UpdateHealthBar() {
-		healthBar.SetDisplayAmounts(Entity.currentHealth, Entity.maxHealth);
-		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.currentHealth < Entity.maxHealth);
+		healthBar.SetDisplayAmounts(Entity.currentHealth, Entity.baseHealth);
+		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.currentHealth < Entity.baseHealth);
 	}
 }

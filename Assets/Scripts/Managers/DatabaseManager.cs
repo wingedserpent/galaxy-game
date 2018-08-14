@@ -54,7 +54,7 @@ public static class DatabaseManager {
 			string sql = "SELECT pu.player_unit_id, p.*, u.*, u.display_name AS unit_display_name " +
 				"FROM player_unit pu " +
 				"INNER JOIN player p ON p.player_id = pu.player_id " +
-				"INNER JOIN unit_type u ON u.unit_type_id = pu.unit_type_id " +
+				"INNER JOIN unit_type u ON u.unit_type = pu.unit_type " +
 				"WHERE p.external_id = @externalPlayerId " +
 				"ORDER BY pu.player_unit_id ASC";
 			MySqlCommand command = new MySqlCommand(sql, connection);
@@ -114,6 +114,7 @@ public static class DatabaseManager {
 
 			while (reader.Read()) {
 				Weapon weapon = new Weapon();
+				weapon.WeaponType = reader.GetString("weapon_type");
 				weapon.Name = reader.GetString("name");
 				weapon.SquadCost = reader.GetInt32("squad_cost");
 				weapon.Range = reader.GetFloat("range");

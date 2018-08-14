@@ -151,9 +151,11 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 		}
 	}
 
-	public void SendSquadSelection(List<int> unitIds) {
+	public void SendSquadSelection(List<SelectedPlayerUnit> selectedUnits) {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
-			writer.Write(unitIds.ToArray());
+			foreach (SelectedPlayerUnit selectedUnit in selectedUnits) {
+				writer.Write(selectedUnit);
+			}
 
 			using (Message message = Message.Create(NetworkTags.SquadSelection, writer)) {
 				client.SendMessage(message, SendMode.Reliable);

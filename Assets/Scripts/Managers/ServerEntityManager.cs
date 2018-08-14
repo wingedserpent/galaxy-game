@@ -58,13 +58,20 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				select (Unit)entity).ToList();
 	}
 
-	public void SpawnPlayerSquad(Player player, List<PlayerUnit> playerUnits) {
+	public void SpawnPlayerSquad(Player player, List<SelectedPlayerUnit> selectedUnits) {
+		List<PlayerUnit> usablePlayerUnits = GetUsablePlayerUnits(player.ID);
 		Vector3 spawnPos = serverGameManager.TeamSpawns[player.TeamId].transform.position;
-		foreach (PlayerUnit playerUnit in playerUnits) {
-			Unit newUnit = (Unit)entityDatabase.GetEntityInstance(playerUnit.UnitType, spawnPos, Quaternion.identity);
-			newUnit.SetPlayer(player);
-			newUnit.PlayerUnitId = playerUnit.PlayerUnitId;
-			RegisterEntity(newUnit);
+
+		foreach (SelectedPlayerUnit selectedUnit in selectedUnits) {
+			PlayerUnit usablePlayerUnit = usablePlayerUnits.Where(x => x.PlayerUnitId == selectedUnit.PlayerUnitId).FirstOrDefault();
+			if (usablePlayerUnit != null) {
+				Unit newUnit = (Unit)entityDatabase.GetEntityInstance(selectedUnit.UnitType, spawnPos, Quaternion.identity);
+				newUnit.SetPlayer(player);
+				newUnit.PlayerUnitId = selectedUnit.PlayerUnitId;
+				newUnit.Weapon = usablePlayerUnit.WeaponOptions.Where(x => x.Name.Equals(selectedUnit.WeaponSelection)).FirstOrDefault();
+				newUnit.Equipment = usablePlayerUnit.EquipmentOptions.Where(x => selectedUnit.EquipmentSelections.Contains(x.Name)).ToList();
+				RegisterEntity(newUnit);
+			}
 		}
 	}
 

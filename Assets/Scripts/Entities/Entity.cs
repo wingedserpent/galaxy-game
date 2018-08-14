@@ -8,10 +8,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	public string typeId;
 	[NonSerialized]
 	public int currentHealth;
-	public int maxHealth;
-	public float attackRange;
-	public float attackSpeed;
-	public int attackDamage;
+	public int baseHealth;
 	public bool isInAir;
 	public bool canAttackGround;
 	public bool canAttackAir;
@@ -24,6 +21,8 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	public ushort TeamId { get; set; }
 	public Weapon Weapon { get; set; }
 	public List<Equipment> Equipment { get; set; }
+
+	private bool isFirstSerialization = true;
 
 	private EntityController _entityController;
 	public EntityController EntityController {
@@ -38,7 +37,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	private void Awake() {
 		EntityController = GetComponent<EntityController>();
 
-		currentHealth = maxHealth;
+		currentHealth = baseHealth;
 		ID = Guid.NewGuid().ToString();
 		PlayerId = "ZZZZ";
 		TeamId = 999;
@@ -50,7 +49,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public int AdjustHealth(int adjustment) {
-		currentHealth = Mathf.Clamp(currentHealth + adjustment, 0, maxHealth);
+		currentHealth = Mathf.Clamp(currentHealth + adjustment, 0, baseHealth);
 		return currentHealth;
 	}
 
@@ -60,11 +59,19 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		PlayerId = e.Reader.ReadString();
 		TeamId = e.Reader.ReadUInt16();
 		currentHealth = e.Reader.ReadInt32();
-		maxHealth = e.Reader.ReadInt32();
+		baseHealth = e.Reader.ReadInt32();
 		transform.position = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		transform.rotation = new Quaternion(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		if (EntityController != null) {
 			e.Reader.ReadSerializableInto(ref _entityController);
+		}
+
+		if (isFirstSerialization && e.Reader.Position < e.Reader.Length) {
+			Weapon = e.Reader.ReadSerializable<Weapon>();
+			for (int i = 0; i < e.Reader.ReadInt32(); i++) {
+				Equipment.Add(e.Reader.ReadSerializable<Equipment>());
+			}
+			isFirstSerialization = false;
 		}
 	}
 
@@ -74,11 +81,20 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		e.Writer.Write(PlayerId);
 		e.Writer.Write(TeamId);
 		e.Writer.Write(currentHealth);
-		e.Writer.Write(maxHealth);
+		e.Writer.Write(baseHealth);
 		e.Writer.Write(transform.position.x); e.Writer.Write(transform.position.y); e.Writer.Write(transform.position.z);
 		e.Writer.Write(transform.rotation.x); e.Writer.Write(transform.rotation.y); e.Writer.Write(transform.rotation.z); e.Writer.Write(transform.rotation.w);
 		if (EntityController != null) {
 			e.Writer.Write(EntityController);
+		}
+
+		if (isFirstSerialization) {
+			e.Writer.Write(Weapon);
+			e.Writer.Write(Equipment.Count);
+			foreach (Equipment equipment in Equipment) {
+				e.Writer.Write(equipment);
+			}
+			isFirstSerialization = false;
 		}
 	}
 

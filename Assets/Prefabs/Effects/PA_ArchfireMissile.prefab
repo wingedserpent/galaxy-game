@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 23694470882496958}
   - component: {fileID: 114801398655599768}
   m_Layer: 12
-  m_Name: PA_ArchfireMissle
+  m_Name: PA_ArchfireMissile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -101,3 +101,4 @@ MonoBehaviour:
   easeType: 8
   resetOnComplete: 0
   destroyOnComplete: 1
+  spawnOnComplete: {fileID: 0}

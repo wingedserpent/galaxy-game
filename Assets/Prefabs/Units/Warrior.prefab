@@ -1523,10 +1523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: warrior
-  maxHealth: 100
-  attackRange: 15
-  attackSpeed: 1.5
-  attackDamage: 4
+  baseHealth: 100
   isInAir: 0
   canAttackGround: 1
   canAttackAir: 1
@@ -1567,6 +1564,31 @@ MonoBehaviour:
   existingProjectiles: []
   attackEffectTime: 0
   attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
+  weaponSettings:
+  - weaponType: ballistic
+    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4402722559298316}
+    existingProjectiles: []
+    attackEffectTime: 0
+    attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
+  - weaponType: laser
+    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4402722559298316}
+    existingProjectiles: []
+    attackEffectTime: 0
+    attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
+  - weaponType: missile
+    projectilePrefab: {fileID: 1231709648642028, guid: e6929d500b1c58543b6a3b20e7308664,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4402722559298316}
+    existingProjectiles: []
+    attackEffectTime: 1
+    attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
   shieldKey: 102
   shieldGameObject: {fileID: 1347072342552222}
 --- !u!114 &114632767339836910

@@ -95,9 +95,11 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 							}
 						}
 					} else if (message.Tag == NetworkTags.SquadSelection) {
-						int[] unitIds = reader.ReadInt32s();
-						List<PlayerUnit> playerUnits = ServerEntityManager.Instance.GetUsablePlayerUnits(ClientAccountMap[e.Client].PlayFabId);
-						ServerEntityManager.Instance.SpawnPlayerSquad(ServerGameManager.Instance.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), playerUnits.Where(x => unitIds.Contains(x.PlayerUnitId)).ToList());
+						List<SelectedPlayerUnit> selectedUnits = new List<SelectedPlayerUnit>();
+						while (reader.Position < reader.Length) {
+							selectedUnits.Add(reader.ReadSerializable<SelectedPlayerUnit>());
+						}
+						ServerEntityManager.Instance.SpawnPlayerSquad(ServerGameManager.Instance.GameState.GetPlayer(ClientAccountMap[e.Client].PlayFabId), selectedUnits);
 					}
 				}
 			} else if (message.Tag == NetworkTags.Connection) {

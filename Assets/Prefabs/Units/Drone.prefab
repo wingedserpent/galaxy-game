@@ -907,10 +907,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: drone
-  maxHealth: 40
-  attackRange: 10
-  attackSpeed: 2
-  attackDamage: 2
+  baseHealth: 40
   isInAir: 1
   canAttackGround: 0
   canAttackAir: 1
@@ -959,6 +956,15 @@ MonoBehaviour:
   existingProjectiles: []
   attackEffectTime: 0
   attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
+  weaponSettings:
+  - weaponType: ballistic
+    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4307887207243772}
+    existingProjectiles: []
+    attackEffectTime: 0
+    attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
 --- !u!114 &114867824290140742
 MonoBehaviour:
   m_ObjectHideFlags: 1

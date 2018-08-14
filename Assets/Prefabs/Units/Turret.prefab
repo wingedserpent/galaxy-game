@@ -1029,6 +1029,15 @@ MonoBehaviour:
   existingProjectiles: []
   attackEffectTime: 0
   attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
+  weaponSettings:
+  - weaponType: ballistic
+    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4196046231673786}
+    existingProjectiles: []
+    attackEffectTime: 0
+    attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
 --- !u!114 &114274258741506322
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1076,10 +1085,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: turret
-  maxHealth: 200
-  attackRange: 16
-  attackSpeed: 0.5
-  attackDamage: 2
+  baseHealth: 200
   isInAir: 0
   canAttackGround: 1
   canAttackAir: 0

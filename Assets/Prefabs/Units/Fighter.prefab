@@ -848,6 +848,16 @@ MonoBehaviour:
   existingProjectiles: []
   attackEffectTime: 1.5
   attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
+  weaponSettings:
+  - weaponType: ballistic
+    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+      type: 2}
+    projectileSpawnPoints:
+    - {fileID: 4838077110679986}
+    - {fileID: 4808543557498162}
+    existingProjectiles: []
+    attackEffectTime: 1.5
+    attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
 --- !u!114 &114543035274241992
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -860,10 +870,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: fighter
-  maxHealth: 150
-  attackRange: 12
-  attackSpeed: 3
-  attackDamage: 10
+  baseHealth: 120
   isInAir: 1
   canAttackGround: 0
   canAttackAir: 1

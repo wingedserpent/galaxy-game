@@ -15,7 +15,7 @@ public class SquadMenuController : MonoBehaviour {
 	public int MaxSquadCost { get; set; }
 
 	private List<UnitSelector> allUnitSelectors = new List<UnitSelector>();
-	private List<UnitSelector> selectedUnits = new List<UnitSelector>();
+	private List<SelectedPlayerUnit> selectedUnits = new List<SelectedPlayerUnit>();
 	private int squadCost;
 
 	public void OpenMenu(int maxSquadCost = 0) {
@@ -42,9 +42,7 @@ public class SquadMenuController : MonoBehaviour {
 		foreach (PlayerUnit playerUnit in playerUnits) {
 			UnitSelector unitSelector = Instantiate<GameObject>(unitSelectorPrefab.gameObject, unitListContainer).GetComponent<UnitSelector>();
 			unitSelector.SquadMenuController = this;
-			unitSelector.UnitName = playerUnit.UnitName;
-			unitSelector.UnitId = playerUnit.PlayerUnitId;
-			unitSelector.SquadCost = playerUnit.SquadCost;
+			unitSelector.PlayerUnit = playerUnit;
 			allUnitSelectors.Add(unitSelector);
 		}
 
@@ -52,18 +50,17 @@ public class SquadMenuController : MonoBehaviour {
 	}
 
 	public void OnUnitSelected(UnitSelector unitSelector) {
-		selectedUnits.Add(unitSelector);
+		selectedUnits.Add(unitSelector.SelectedPlayerUnit);
 		UpdateSquadCost(squadCost + unitSelector.SquadCost);
 	}
 
 	public void OnUnitDeselected(UnitSelector unitSelector) {
-		selectedUnits.Remove(unitSelector);
+		selectedUnits.Remove(unitSelector.SelectedPlayerUnit);
 		UpdateSquadCost(squadCost - unitSelector.SquadCost);
 	}
 
 	public void OnConfirm() {
-		List<int> unitIds = selectedUnits.Select(x => x.UnitId).ToList();
-		ClientNetworkManager.Instance.SendSquadSelection(unitIds);
+		ClientNetworkManager.Instance.SendSquadSelection(selectedUnits);
 
 		CloseMenu();
 

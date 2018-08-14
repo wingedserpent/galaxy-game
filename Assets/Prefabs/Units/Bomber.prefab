@@ -850,10 +850,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: bomber
-  maxHealth: 150
-  attackRange: 5
-  attackSpeed: 3
-  attackDamage: 15
+  baseHealth: 150
   isInAir: 1
   canAttackGround: 1
   canAttackAir: 0
@@ -899,6 +896,15 @@ MonoBehaviour:
   - {fileID: 1182137934691030}
   attackEffectTime: 1
   attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
+  weaponSettings:
+  - weaponType: bomb
+    projectilePrefab: {fileID: 0}
+    projectileSpawnPoints: []
+    existingProjectiles:
+    - {fileID: 1590778975178772}
+    - {fileID: 1182137934691030}
+    attackEffectTime: 1
+    attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
 --- !u!114 &114996393681450832
 MonoBehaviour:
   m_ObjectHideFlags: 1
