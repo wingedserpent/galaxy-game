@@ -17,7 +17,8 @@ public class SelectedPlayerUnit : IDarkRiftSerializable {
 		UnitType = e.Reader.ReadString();
 		WeaponSelection = e.Reader.ReadString();
 
-		for (int i = 0; i < e.Reader.ReadInt32(); i++) {
+		int numEquipSelections = e.Reader.ReadInt32();
+		for (int i = 0; i < numEquipSelections; i++) {
 			EquipmentSelections.Add(e.Reader.ReadString());
 		}
 	}

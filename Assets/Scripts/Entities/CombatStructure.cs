@@ -5,5 +5,5 @@ using System.Collections.Generic;
 
 public class CombatStructure : Structure {
 
-	public override bool CanAttack { get { return true; } }
+	public override bool CanAttack { get { return Weapon != null; } }
 }

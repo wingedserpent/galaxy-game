@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class Unit : Entity {
 
 	public override bool CanMove { get { return true; } }
-	public override bool CanAttack { get { return true; } }
+	public override bool CanAttack { get { return Weapon != null; } }
 
 	public int PlayerUnitId { get; set; }
 

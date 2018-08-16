@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class Equipment : IDarkRiftSerializable {
 	
-	public string EquipmentType { get; set; }
 	public string Name { get; set; }
+	public string EquipmentType { get; set; }
 	public int SquadCost { get; set; }
 	public int Health { get; set; }
 	public int Shield { get; set; }
@@ -16,8 +16,8 @@ public class Equipment : IDarkRiftSerializable {
 	public string Ability { get; set; }
 
 	public void Deserialize(DeserializeEvent e) {
-		EquipmentType = e.Reader.ReadString();
 		Name = e.Reader.ReadString();
+		EquipmentType = e.Reader.ReadString();
 		SquadCost = e.Reader.ReadInt32();
 		Health = e.Reader.ReadInt32();
 		Shield = e.Reader.ReadInt32();
@@ -28,8 +28,8 @@ public class Equipment : IDarkRiftSerializable {
 	}
 
 	public void Serialize(SerializeEvent e) {
-		e.Writer.Write(EquipmentType);
 		e.Writer.Write(Name);
+		e.Writer.Write(EquipmentType);
 		e.Writer.Write(SquadCost);
 		e.Writer.Write(Health);
 		e.Writer.Write(Shield);

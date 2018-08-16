@@ -28,7 +28,7 @@ public class UnitSelector : MonoBehaviour {
 			SelectedPlayerUnit.PlayerUnitId = _playerUnit.PlayerUnitId;
 			SelectedPlayerUnit.UnitType = _playerUnit.UnitType;
 			_playerUnitId = _playerUnit.PlayerUnitId;
-			UnitName = _playerUnit.UnitName;
+			UnitName = _playerUnit.Name;
 			SquadCost = _playerUnit.SquadCost;
 			//temporary automatic selection
 			if (_playerUnit.WeaponOptions.Count > 0) {

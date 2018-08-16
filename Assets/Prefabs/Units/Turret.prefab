@@ -1022,21 +1022,14 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: c36ca4d8a59972f4982bad4365937c3e, type: 3}
   unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
     type: 2}
-  projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
-    type: 2}
-  projectileSpawnPoints:
-  - {fileID: 4196046231673786}
-  existingProjectiles: []
-  attackEffectTime: 0
-  attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
-  weaponSettings:
+  weaponEffects:
   - weaponType: ballistic
     projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
       type: 2}
     projectileSpawnPoints:
     - {fileID: 4196046231673786}
     existingProjectiles: []
-    attackEffectTime: 0
+    attackEffectTime: 0.1
     attackSound: {fileID: 8300000, guid: 5f2821fc1d23646259af2167fc82a481, type: 3}
 --- !u!114 &114274258741506322
 MonoBehaviour:
@@ -1085,7 +1078,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: turret
-  baseHealth: 200
   isInAir: 0
   canAttackGround: 1
   canAttackAir: 0

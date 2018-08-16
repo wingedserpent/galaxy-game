@@ -841,16 +841,9 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
   unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
     type: 2}
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoints:
-  - {fileID: 4838077110679986}
-  - {fileID: 4808543557498162}
-  existingProjectiles: []
-  attackEffectTime: 1.5
-  attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
-  weaponSettings:
-  - weaponType: ballistic
-    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+  weaponEffects:
+  - weaponType: missile
+    projectilePrefab: {fileID: 1231709648642028, guid: e6929d500b1c58543b6a3b20e7308664,
       type: 2}
     projectileSpawnPoints:
     - {fileID: 4838077110679986}
@@ -870,7 +863,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: fighter
-  baseHealth: 120
   isInAir: 1
   canAttackGround: 0
   canAttackAir: 1

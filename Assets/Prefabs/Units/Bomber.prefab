@@ -850,7 +850,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: bomber
-  baseHealth: 150
   isInAir: 1
   canAttackGround: 1
   canAttackAir: 0
@@ -889,14 +888,7 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
   unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
     type: 2}
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoints: []
-  existingProjectiles:
-  - {fileID: 1590778975178772}
-  - {fileID: 1182137934691030}
-  attackEffectTime: 1
-  attackSound: {fileID: 8300000, guid: 9fc03a91b5216b74394a6166059d68f2, type: 3}
-  weaponSettings:
+  weaponEffects:
   - weaponType: bomb
     projectilePrefab: {fileID: 0}
     projectileSpawnPoints: []

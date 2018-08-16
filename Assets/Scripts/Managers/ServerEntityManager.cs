@@ -68,6 +68,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				Unit newUnit = (Unit)entityDatabase.GetEntityInstance(selectedUnit.UnitType, spawnPos, Quaternion.identity);
 				newUnit.SetPlayer(player);
 				newUnit.PlayerUnitId = selectedUnit.PlayerUnitId;
+				newUnit.MaxHealth = usablePlayerUnit.MaxHealth;
+				newUnit.CurrentHealth = usablePlayerUnit.CurrentHealth;
 				newUnit.Weapon = usablePlayerUnit.WeaponOptions.Where(x => x.Name.Equals(selectedUnit.WeaponSelection)).FirstOrDefault();
 				newUnit.Equipment = usablePlayerUnit.EquipmentOptions.Where(x => selectedUnit.EquipmentSelections.Contains(x.Name)).ToList();
 				RegisterEntity(newUnit);
@@ -76,8 +78,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	}
 
 	public void SpawnStructure(Player player, string structureTypeId, Vector3 spawnPos) {
-		Entity entityRef = entityDatabase.GetEntityReference(structureTypeId);
-		if (player.Resources >= (entityRef as Structure).resourceCost) {
+		StructureData structureData = DatabaseManager.GetStructureData(structureTypeId); //TODO cache this or something
+		if (player.Resources >= structureData.ResourceCost) {
 			//navmesh check
 			NavMeshHit navHit;
 			if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
@@ -91,9 +93,12 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				if (colliders.Count(x => x != constructionCollider) == 0) {
 					Structure newStructure = (Structure)entityDatabase.GetEntityInstance(structureTypeId, spawnPos, Quaternion.identity);
 					newStructure.SetPlayer(player);
+					newStructure.MaxHealth = structureData.MaxHealth;
+					newStructure.CurrentHealth = structureData.CurrentHealth;
+					newStructure.Weapon = structureData.WeaponOptions.FirstOrDefault();
 					RegisterEntity(newStructure);
 					
-					serverGameManager.DecreaseResources(player, (entityRef as Structure).resourceCost);
+					serverGameManager.DecreaseResources(player, structureData.ResourceCost);
 				}
 
 				Destroy(construction);

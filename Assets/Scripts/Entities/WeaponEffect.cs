@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class WeaponSetting {
+public class WeaponEffect {
 	public string weaponType;
 	public GameObject projectilePrefab;
 	public List<Transform> projectileSpawnPoints = new List<Transform>();

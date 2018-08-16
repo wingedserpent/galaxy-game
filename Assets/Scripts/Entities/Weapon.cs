@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class Weapon : IDarkRiftSerializable {
 
-	public string WeaponType { get; set; }
 	public string Name { get; set; }
+	public string WeaponType { get; set; }
 	public int SquadCost { get; set; }
 	public float Range { get; set; }
 	public int Damage { get; set; }
@@ -18,8 +18,8 @@ public class Weapon : IDarkRiftSerializable {
 	public float DamageIncreaseRate { get; set; }
 
 	public void Deserialize(DeserializeEvent e) {
-		WeaponType = e.Reader.ReadString();
 		Name = e.Reader.ReadString();
+		WeaponType = e.Reader.ReadString();
 		SquadCost = e.Reader.ReadInt32();
 		Range = e.Reader.ReadSingle();
 		Damage = e.Reader.ReadInt32();
@@ -32,8 +32,8 @@ public class Weapon : IDarkRiftSerializable {
 	}
 
 	public void Serialize(SerializeEvent e) {
-		e.Writer.Write(WeaponType);
 		e.Writer.Write(Name);
+		e.Writer.Write(WeaponType);
 		e.Writer.Write(SquadCost);
 		e.Writer.Write(Range);
 		e.Writer.Write(Damage);

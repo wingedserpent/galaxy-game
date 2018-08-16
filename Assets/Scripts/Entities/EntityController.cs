@@ -15,7 +15,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	public AudioClip deathSound;
 	public EntityHUD unitHUDPrefab;
 	
-	public List<WeaponSetting> weaponSettings;
+	public List<WeaponEffect> weaponEffects;
 
 	public AIState State { get; set; }
 	public bool DamagedTrigger { get; set; }
@@ -30,6 +30,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected bool isDelayingAttack = false;
 	protected bool isRespondingToAttackCommand = false;
 	protected string lastAttackTargetId;
+	protected WeaponEffect activeWeaponEffect;
 
 	public static event OnDeath OnDeath = delegate { };
 
@@ -111,8 +112,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected Entity CheckForTargets() {
 		return (from target in vision.VisibleTargets.Where(x => x != null)
 				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
-				where target.TeamId != entity.TeamId && distance <= entity.Weapon.Range
-					&& target.isInAir ? entity.canAttackAir : entity.canAttackGround
+				where CanAttackTarget(target) && distance <= entity.Weapon.Range
 				orderby distance ascending
 				select target).FirstOrDefault();
 	}
@@ -143,13 +143,11 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			transform.LookAt(lookTarget);
 
 			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.Weapon.Range) {
-				if (entity.CanMove) {
-					//out of range, move into range if responding to an explicit attack command
-					if (isRespondingToAttackCommand) {
-						SetMoveDestination(FindTrueMoveDestination(AttackTarget.transform.position));
-					}
+				//out of range, try to move into range if responding to an explicit attack command
+				if (entity.CanMove && isRespondingToAttackCommand) {
+					SetMoveDestination(FindTrueMoveDestination(AttackTarget.transform.position));
 				} else {
-					//out of range, give up
+					//out of range and either can't move or not allowed to chase, so give up
 					AttackTarget = null;
 					State = AIState.IDLE;
 				}
@@ -159,17 +157,19 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 				if (!isDelayingAttack && attackCooldown <= 0f) {
 					//do the attack after a delay (for visual effects)
-					StartCoroutine(DelayedAttack(GetActiveWeaponSetting().attackEffectTime, AttackTarget));
+					StartCoroutine(DelayedAttack(AttackTarget));
 					AttackTrigger = true;
 				}
 			}
 		}
 	}
 
-	protected IEnumerator DelayedAttack(float delay, Entity attackTarget) {
-		if (delay > 0f) {
+	protected IEnumerator DelayedAttack(Entity attackTarget) {
+		float attackEffectTime = activeWeaponEffect != null ? activeWeaponEffect.attackEffectTime : 0f;
+
+		if (attackEffectTime > 0f) {
 			isDelayingAttack = true;
-			yield return new WaitForSeconds(delay);
+			yield return new WaitForSeconds(attackEffectTime);
 		}
 
 		if (attackTarget != null) {
@@ -180,12 +180,12 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			}
 		}
 
-		attackCooldown = entity.Weapon.AttackRate - GetActiveWeaponSetting().attackEffectTime;
+		attackCooldown = entity.Weapon.AttackRate - attackEffectTime;
 		isDelayingAttack = false;
 	}
 
 	public virtual void Move(Vector3 target, Vector3? groupMovementCenter = null) {
-		if (entity.CanMove) {
+		if (!isDelayingAttack && entity.CanMove) {
 			AttackTarget = null;
 			if (SetMoveDestination(FindTrueMoveDestination(target, groupMovementCenter))) {
 				State = AIState.MOVING;
@@ -194,19 +194,25 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public virtual void Stop() {
-		State = AIState.IDLE;
-		AttackTarget = null;
-		StopMovement();
+		if (!isDelayingAttack) {
+			State = AIState.IDLE;
+			AttackTarget = null;
+			StopMovement();
+		}
 	}
 
 	public virtual void Attack(Entity attackTarget) {
-		if (attackTarget != null && entity.CanAttack
-				&& attackTarget.isInAir ? entity.canAttackAir: entity.canAttackGround) {
+		if (!isDelayingAttack && CanAttackTarget(attackTarget)) {
 			isRespondingToAttackCommand = true;
 			StopMovement();
 			AttackTarget = attackTarget;
 			State = AIState.ATTACKING;
 		}
+	}
+
+	protected bool CanAttackTarget(Entity target) {
+		return target != null && entity.CanAttack && target.TeamId != entity.TeamId 
+			&& target.isInAir ? entity.canAttackAir : entity.canAttackGround;
 	}
 
 	protected Vector3 FindTrueMoveDestination(Vector3 target, Vector3? groupMovementCenter = null) {
@@ -306,8 +312,11 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	protected WeaponSetting GetActiveWeaponSetting() {
-		return weaponSettings.Where(x => x.weaponType.Equals(entity.Weapon.WeaponType)).FirstOrDefault();
+	protected void SetActiveWeaponEffect() {
+		activeWeaponEffect = weaponEffects.Where(x => x.weaponType.Equals(entity.Weapon.WeaponType)).FirstOrDefault();
+		if (activeWeaponEffect != null && activeWeaponEffect.projectileSpawnPoints.Count == 0) {
+			activeWeaponEffect.projectileSpawnPoints.Add(transform);
+		}
 	}
 
 	protected virtual void UpdateEffects() {
@@ -322,26 +331,26 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (entity.CanAttack && AttackTrigger) {
-			WeaponSetting activeWeaponSetting = GetActiveWeaponSetting();
 			if (animator != null && animator.enabled) {
 				animator.SetTrigger("attack");
 			}
 			if (audioSource != null) {
-				audioSource.PlayOneShot(activeWeaponSetting.attackSound);
+				audioSource.PlayOneShot(activeWeaponEffect.attackSound);
 			}
 			if (AttackTarget != null) {
-				if (activeWeaponSetting.projectilePrefab != null) {
-					foreach (Transform spawnPoint in activeWeaponSetting.projectileSpawnPoints.Append(transform)) {
-						Tweener projectile = Instantiate<GameObject>(activeWeaponSetting.projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
+				if (activeWeaponEffect.projectilePrefab != null) {
+					foreach (Transform spawnPoint in activeWeaponEffect.projectileSpawnPoints) {
+						Tweener projectile = Instantiate<GameObject>(activeWeaponEffect.projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
 						projectile.target = AttackTarget.transform;
-						projectile.time = activeWeaponSetting.attackEffectTime;
+						projectile.time = activeWeaponEffect.attackEffectTime;
+						projectile.enabled = true;
 					}
 				}
-				if (activeWeaponSetting.existingProjectiles != null) {
-					foreach (GameObject projectileGO in activeWeaponSetting.existingProjectiles) {
+				if (activeWeaponEffect.existingProjectiles != null) {
+					foreach (GameObject projectileGO in activeWeaponEffect.existingProjectiles) {
 						Tweener projectile = projectileGO.GetComponent<Tweener>();
 						projectile.target = AttackTarget.transform;
-						projectile.time = activeWeaponSetting.attackEffectTime;
+						projectile.time = activeWeaponEffect.attackEffectTime;
 						projectile.enabled = true;
 					}
 				}
@@ -385,6 +394,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				AttackTarget = ClientEntityManager.Instance.GetEntity(attackTargetId);
 				lastAttackTargetId = attackTargetId;
 			}
+
+			SetActiveWeaponEffect();
 		}
 	}
 

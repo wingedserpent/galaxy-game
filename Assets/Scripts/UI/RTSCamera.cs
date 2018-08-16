@@ -54,7 +54,7 @@ namespace RTSCam
         public float scrollWheelZoomingSensitivity = 25f;
 
 		//private float heightZoomPos = 0; //value in range (0, 1) used as t in Mathf.Lerp
-		private float zoomPos = 0; //value in range (0, 1) used as t in Mathf.Lerp
+		private float zoomPos = 1; //value in range (0, 1) used as t in Mathf.Lerp
 
         #endregion
 
