@@ -16,6 +16,9 @@ public class PlayerUnit : IDarkRiftSerializable {
 	public int SquadCost { get; set; }
 	public int MaxHealth { get; set; }
 	public int CurrentHealth { get; set; }
+	public int MaxShield { get; set; }
+	public float MoveSpeed { get; set; }
+	public float VisionRange { get; set; }
 	public List<Weapon> WeaponOptions { get; set; }
 	public List<Equipment> EquipmentOptions { get; set; }
 
@@ -32,6 +35,9 @@ public class PlayerUnit : IDarkRiftSerializable {
 		SquadCost = e.Reader.ReadInt32();
 		MaxHealth = e.Reader.ReadInt32();
 		CurrentHealth = e.Reader.ReadInt32();
+		MaxShield = e.Reader.ReadInt32();
+		MoveSpeed = e.Reader.ReadSingle();
+		VisionRange = e.Reader.ReadSingle();
 
 		int numWeaponOptions = e.Reader.ReadInt32();
 		for (int i=0; i < numWeaponOptions; i++) {
@@ -51,6 +57,9 @@ public class PlayerUnit : IDarkRiftSerializable {
 		e.Writer.Write(SquadCost);
 		e.Writer.Write(MaxHealth);
 		e.Writer.Write(CurrentHealth);
+		e.Writer.Write(MaxShield);
+		e.Writer.Write(MoveSpeed);
+		e.Writer.Write(VisionRange);
 
 		e.Writer.Write(WeaponOptions.Count);
 		foreach (Weapon weaponOption in WeaponOptions) {

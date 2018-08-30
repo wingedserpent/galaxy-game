@@ -10,6 +10,7 @@ public class UIManager : Singleton<UIManager> {
 
 	public ConnectionMenuController connectionMenuController;
 	public SquadMenuController squadMenuController;
+	public CustomizationMenuController customizationMenuController;
 	public ChatWindowController chatWindowController;
 	public PlayerListController playerListController;
 	public Text scoreDisplay;

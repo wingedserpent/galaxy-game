@@ -70,8 +70,16 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				newUnit.PlayerUnitId = selectedUnit.PlayerUnitId;
 				newUnit.MaxHealth = usablePlayerUnit.MaxHealth;
 				newUnit.CurrentHealth = usablePlayerUnit.CurrentHealth;
+				newUnit.MaxShield = newUnit.CurrentShield = usablePlayerUnit.MaxShield;
+				newUnit.MoveSpeed = usablePlayerUnit.MoveSpeed;
+				newUnit.VisionRange = usablePlayerUnit.VisionRange;
 				newUnit.Weapon = usablePlayerUnit.WeaponOptions.Where(x => x.Name.Equals(selectedUnit.WeaponSelection)).FirstOrDefault();
+				if (newUnit.Weapon == null && usablePlayerUnit.WeaponOptions.Count > 0) {
+					newUnit.Weapon = usablePlayerUnit.WeaponOptions.Where(x => x.SquadCost == 0).FirstOrDefault();
+				}
 				newUnit.Equipment = usablePlayerUnit.EquipmentOptions.Where(x => selectedUnit.EquipmentSelections.Contains(x.Name)).ToList();
+				newUnit.ApplyEquipment();
+
 				RegisterEntity(newUnit);
 			}
 		}

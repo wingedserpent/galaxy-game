@@ -10,7 +10,7 @@ public class Equipment : IDarkRiftSerializable {
 	public int SquadCost { get; set; }
 	public int Health { get; set; }
 	public int Shield { get; set; }
-	public float ShieldRecharge { get; set; }
+	public int ShieldRechargeRate { get; set; }
 	public float MoveSpeed { get; set; }
 	public float VisionRange { get; set; }
 	public string Ability { get; set; }
@@ -21,10 +21,13 @@ public class Equipment : IDarkRiftSerializable {
 		SquadCost = e.Reader.ReadInt32();
 		Health = e.Reader.ReadInt32();
 		Shield = e.Reader.ReadInt32();
-		ShieldRecharge = e.Reader.ReadSingle();
+		ShieldRechargeRate = e.Reader.ReadInt32();
 		MoveSpeed = e.Reader.ReadSingle();
 		VisionRange = e.Reader.ReadSingle();
 		Ability = e.Reader.ReadString();
+		if (Ability.Equals("")) {
+			Ability = null;
+		}
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -33,9 +36,9 @@ public class Equipment : IDarkRiftSerializable {
 		e.Writer.Write(SquadCost);
 		e.Writer.Write(Health);
 		e.Writer.Write(Shield);
-		e.Writer.Write(ShieldRecharge);
+		e.Writer.Write(ShieldRechargeRate);
 		e.Writer.Write(MoveSpeed);
 		e.Writer.Write(VisionRange);
-		e.Writer.Write(Ability);
+		e.Writer.Write(Ability != null ? Ability : "");
 	}
 }

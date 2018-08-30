@@ -6,12 +6,15 @@ using UnityEngine.UI;
 public class EntityHUD : MonoBehaviour {
 
 	public PercentageBar healthBar;
+	public PercentageBar shieldBar;
 	public bool hideBarsWhenFull = false;
 	public float scalingRatio = 50f;
 	public float yPosRatio = 2000f;
 
 	public Entity Entity { get; set; }
 	private RectTransform rectTransform;
+
+	private bool shieldEnabled = true;
 
 	private void Awake() {
 		rectTransform = GetComponent<RectTransform>();
@@ -20,6 +23,10 @@ public class EntityHUD : MonoBehaviour {
 	private void Start() {
 		if (GetComponent<VisibilityToggle>() != null) {
 			GetComponent<VisibilityToggle>().EntityController = Entity.EntityController;
+		}
+		if (Entity.MaxShield <= 0) {
+			shieldEnabled = false;
+			shieldBar.gameObject.SetActive(false);
 		}
 	}
 
@@ -30,6 +37,9 @@ public class EntityHUD : MonoBehaviour {
 	private void Update() {
 		UpdateRendering();
 		UpdateHealthBar();
+		if (shieldEnabled) {
+			UpdateShieldBar();
+		}
 	}
 
 	private void UpdateRendering() {
@@ -50,5 +60,10 @@ public class EntityHUD : MonoBehaviour {
 	private void UpdateHealthBar() {
 		healthBar.SetDisplayAmounts(Entity.CurrentHealth, Entity.MaxHealth);
 		healthBar.gameObject.SetActive(!hideBarsWhenFull || Entity.CurrentHealth < Entity.MaxHealth);
+	}
+
+	private void UpdateShieldBar() {
+		shieldBar.SetDisplayAmounts(Entity.CurrentShield, Entity.MaxShield);
+		shieldBar.gameObject.SetActive(!hideBarsWhenFull || Entity.CurrentShield < Entity.MaxShield);
 	}
 }

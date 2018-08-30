@@ -786,7 +786,8 @@ MonoBehaviour:
   easeType: 1
   resetOnComplete: 1
   destroyOnComplete: 0
-  spawnOnComplete: {fileID: 0}
+  spawnOnComplete: {fileID: 1899141640574806, guid: 8b40a703340a4ef4a934ce3cea1f15b0,
+    type: 2}
 --- !u!114 &114330309192014180
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -815,7 +816,8 @@ MonoBehaviour:
   easeType: 1
   resetOnComplete: 1
   destroyOnComplete: 0
-  spawnOnComplete: {fileID: 0}
+  spawnOnComplete: {fileID: 1899141640574806, guid: 8b40a703340a4ef4a934ce3cea1f15b0,
+    type: 2}
 --- !u!114 &114755028619455846
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -853,6 +855,7 @@ MonoBehaviour:
   isInAir: 1
   canAttackGround: 1
   canAttackAir: 0
+  shieldRechargeCooldown: 5
 --- !u!114 &114865632350855854
 MonoBehaviour:
   m_ObjectHideFlags: 1

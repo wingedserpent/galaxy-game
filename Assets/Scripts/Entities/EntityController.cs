@@ -31,6 +31,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected bool isRespondingToAttackCommand = false;
 	protected string lastAttackTargetId;
 	protected WeaponEffect activeWeaponEffect;
+	protected int currentDamage = 0;
+	protected float damageIncreaseTimer = 0f;
 
 	public static event OnDeath OnDeath = delegate { };
 
@@ -63,10 +65,20 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected virtual void Start() {
 		VisibilityManager.VisibilityTargetDispatch += VisibilityTargetDispatch;
 
+		if (vision != null) {
+			vision.viewRadius = entity.VisionRange;
+		}
+		if (agent != null) {
+			agent.speed = entity.MoveSpeed;
+			agent.acceleration = entity.MoveSpeed * entity.MoveSpeed;
+		}
+
 		if (NetworkStatus.Instance.IsClient && unitHUDPrefab != null) {
 			EntityHUD = Instantiate<GameObject>(unitHUDPrefab.gameObject, FindObjectOfType<Canvas>().transform).GetComponent<EntityHUD>();
 			EntityHUD.Entity = entity;
 		}
+
+		SetActiveWeaponEffect();
 	}
 
 	protected virtual void Update() {
@@ -104,6 +116,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 			AttackTarget = CheckForTargets();
 			if (AttackTarget != null) {
+				SetCurrentDamage(entity.Weapon.Damage);
 				State = AIState.ATTACKING;
 			}
 		}
@@ -136,6 +149,13 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			//target disappeared or died
 			Stop();
 		} else {
+			if (damageIncreaseTimer > 0f) {
+				damageIncreaseTimer -= Time.deltaTime;
+				if (damageIncreaseTimer <= 0f) {
+					SetCurrentDamage(currentDamage + 1);
+				}
+			}
+
 			//look at target's x/z position
 			Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
 									   transform.position.y,
@@ -173,10 +193,20 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (attackTarget != null) {
-			bool targetDied = attackTarget.EntityController.TakeDamage(entity.Weapon.Damage);
+			bool targetDied = attackTarget.EntityController.TakeDamage(currentDamage);
 			if (targetDied) {
 				AttackTarget = null;
 				State = AIState.IDLE;
+			}
+
+			if (entity.Weapon.SplashRadius > 0f) {
+				Collider[] overlaps = Physics.OverlapSphere(attackTarget.transform.position, entity.Weapon.SplashRadius, LayerMask.NameToLayer("Unit"));
+				IEnumerable<Entity> damagedTargets = (from target in overlaps.Select(x => x.GetComponentInParent<Entity>())
+													  where CanSplashAttackTarget(target, attackTarget)
+													  select target);
+				foreach (Entity entity in damagedTargets) {
+					entity.EntityController.TakeDamage(currentDamage);
+				}
 			}
 		}
 
@@ -184,8 +214,17 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		isDelayingAttack = false;
 	}
 
+	protected void SetCurrentDamage(int damage) {
+		currentDamage = damage;
+		if (currentDamage < entity.Weapon.MaxDamage) {
+			damageIncreaseTimer = (entity.Weapon.DamageIncreaseTime / (entity.Weapon.MaxDamage - entity.Weapon.Damage));
+		} else {
+			damageIncreaseTimer = 0f;
+		}
+	}
+
 	public virtual void Move(Vector3 target, Vector3? groupMovementCenter = null) {
-		if (!isDelayingAttack && entity.CanMove) {
+		if (entity.CanMove) {
 			AttackTarget = null;
 			if (SetMoveDestination(FindTrueMoveDestination(target, groupMovementCenter))) {
 				State = AIState.MOVING;
@@ -194,25 +233,29 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public virtual void Stop() {
-		if (!isDelayingAttack) {
-			State = AIState.IDLE;
-			AttackTarget = null;
-			StopMovement();
-		}
+		State = AIState.IDLE;
+		AttackTarget = null;
+		StopMovement();
 	}
 
 	public virtual void Attack(Entity attackTarget) {
-		if (!isDelayingAttack && CanAttackTarget(attackTarget)) {
+		if (CanAttackTarget(attackTarget)) {
 			isRespondingToAttackCommand = true;
 			StopMovement();
 			AttackTarget = attackTarget;
+			SetCurrentDamage(entity.Weapon.Damage);
 			State = AIState.ATTACKING;
 		}
 	}
 
 	protected bool CanAttackTarget(Entity target) {
-		return target != null && entity.CanAttack && target.TeamId != entity.TeamId 
+		return target != null && entity.CanAttack && target.TeamId != entity.TeamId
 			&& target.isInAir ? entity.canAttackAir : entity.canAttackGround;
+	}
+
+	protected bool CanSplashAttackTarget(Entity target, Entity originalTarget) {
+		return target != null && target.TeamId != entity.TeamId 
+			&& (originalTarget.isInAir == target.isInAir);
 	}
 
 	protected Vector3 FindTrueMoveDestination(Vector3 target, Vector3? groupMovementCenter = null) {
@@ -262,12 +305,16 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public virtual bool TakeDamage(int amount) {
-		int resultHealth = entity.AdjustHealth(-amount);
-		if (resultHealth <= 0) {
-			OnDeath(entity);
-			return true;
+		int startingShield = entity.CurrentShield;
+		int resultShield = entity.AdjustShield(-amount);
+		if (startingShield - resultShield < amount) {
+			int resultHealth = entity.AdjustHealth(-amount);
+			if (resultHealth <= 0) {
+				OnDeath(entity);
+				return true;
+			}
+			DamagedTrigger = true;
 		}
-		DamagedTrigger = true;
 		return false;
 	}
 

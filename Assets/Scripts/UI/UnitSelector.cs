@@ -27,14 +27,12 @@ public class UnitSelector : MonoBehaviour {
 			SelectedPlayerUnit = new SelectedPlayerUnit();
 			SelectedPlayerUnit.PlayerUnitId = _playerUnit.PlayerUnitId;
 			SelectedPlayerUnit.UnitType = _playerUnit.UnitType;
-			_playerUnitId = _playerUnit.PlayerUnitId;
-			UnitName = _playerUnit.Name;
-			SquadCost = _playerUnit.SquadCost;
-			//temporary automatic selection
 			if (_playerUnit.WeaponOptions.Count > 0) {
 				SelectedPlayerUnit.WeaponSelection = _playerUnit.WeaponOptions[0].Name;
 			}
-			SelectedPlayerUnit.EquipmentSelections = _playerUnit.EquipmentOptions.Select(x => x.Name).ToList();
+			_playerUnitId = _playerUnit.PlayerUnitId;
+			UnitName = _playerUnit.Name;
+			SquadCost = _playerUnit.SquadCost;
 		}
 	}
 	public string UnitName {
@@ -50,7 +48,7 @@ public class UnitSelector : MonoBehaviour {
 		get {
 			return _squadCost;
 		}
-		set {
+		private set {
 			_squadCost = value;
 			squadCostText.text = _squadCost.ToString();
 		}
@@ -68,6 +66,17 @@ public class UnitSelector : MonoBehaviour {
 		}
 	}
 
+	public void OnCustomize() {
+		CustomizationMenuController custMenu = UIManager.Instance.customizationMenuController;
+		custMenu.UnitSelector = this;
+		custMenu.OpenMenu();
+	}
+
+	public void UpdateSquadCost(int newCost) {
+		SquadCost = newCost;
+		SquadMenuController.OnUnitUpdated(this);
+	}
+	
 	public override bool Equals(object obj) {
 		var selector = obj as UnitSelector;
 		return selector != null &&

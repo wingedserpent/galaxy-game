@@ -15,7 +15,7 @@ public class Weapon : IDarkRiftSerializable {
 	public float SplashRadius { get; set; }
 	public int MaxDamage { get; set; }
 	public int MaxShieldDamage { get; set; }
-	public float DamageIncreaseRate { get; set; }
+	public float DamageIncreaseTime { get; set; }
 
 	public void Deserialize(DeserializeEvent e) {
 		Name = e.Reader.ReadString();
@@ -28,7 +28,7 @@ public class Weapon : IDarkRiftSerializable {
 		SplashRadius = e.Reader.ReadSingle();
 		MaxDamage = e.Reader.ReadInt32();
 		MaxShieldDamage = e.Reader.ReadInt32();
-		DamageIncreaseRate = e.Reader.ReadSingle();
+		DamageIncreaseTime = e.Reader.ReadSingle();
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -42,6 +42,6 @@ public class Weapon : IDarkRiftSerializable {
 		e.Writer.Write(SplashRadius);
 		e.Writer.Write(MaxDamage);
 		e.Writer.Write(MaxShieldDamage);
-		e.Writer.Write(DamageIncreaseRate);
+		e.Writer.Write(DamageIncreaseTime);
 	}
 }

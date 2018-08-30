@@ -9,6 +9,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	public bool isInAir;
 	public bool canAttackGround;
 	public bool canAttackAir;
+	public float shieldRechargeCooldown = 5f;
 
 	public virtual bool CanMove { get { return false; } }
 	public virtual bool CanAttack { get { return false; } }
@@ -18,8 +19,15 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 	public ushort TeamId { get; set; }
 	public Weapon Weapon { get; set; }
 	public List<Equipment> Equipment { get; set; }
-	public int CurrentHealth { get; set; }
 	public int MaxHealth { get; set; }
+	public int CurrentHealth { get; set; }
+	public int MaxShield { get; set; }
+	public int CurrentShield { get; set; }
+	public int ShieldRechargeRate { get; set; }
+	public float MoveSpeed { get; set; }
+	public float VisionRange { get; set; }
+
+	private float shieldRechargeTimer = 0f;
 
 	private EntityController _entityController;
 	public EntityController EntityController {
@@ -41,6 +49,16 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		TeamId = 999;
 	}
 
+	private void Update() {
+		if (shieldRechargeTimer > 0f) {
+			shieldRechargeTimer -= Time.deltaTime;
+			if (shieldRechargeTimer <= 0f) {
+				AdjustShield(ShieldRechargeRate);
+				shieldRechargeTimer = 1f;
+			}
+		}
+	}
+
 	public void SetPlayer(Player player) {
 		PlayerId = player.ID;
 		TeamId = player.TeamId;
@@ -51,13 +69,39 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		return CurrentHealth;
 	}
 
+	public int AdjustShield(int adjustment) {
+		CurrentShield = Mathf.Clamp(CurrentShield + adjustment, 0, MaxShield);
+		if (adjustment < 0) {
+			shieldRechargeTimer = shieldRechargeCooldown;
+		}
+		return CurrentShield;
+	}
+
+	public void ApplyEquipment() {
+		foreach (Equipment equipment in Equipment) {
+			MaxHealth += equipment.Health;
+			CurrentHealth += equipment.Health;
+			MaxShield += equipment.Shield;
+			CurrentShield += equipment.Shield;
+			ShieldRechargeRate += equipment.ShieldRechargeRate;
+			MoveSpeed += equipment.MoveSpeed;
+			VisionRange += equipment.VisionRange;
+			//TODO apply move speed, vision range, abilities
+		}
+	}
+
 	public virtual void Deserialize(DeserializeEvent e) {
 		typeId = e.Reader.ReadString();
 		ID = e.Reader.ReadString();
 		PlayerId = e.Reader.ReadString();
 		TeamId = e.Reader.ReadUInt16();
-		CurrentHealth = e.Reader.ReadInt32();
 		MaxHealth = e.Reader.ReadInt32();
+		CurrentHealth = e.Reader.ReadInt32();
+		MaxShield = e.Reader.ReadInt32();
+		CurrentShield = e.Reader.ReadInt32();
+		ShieldRechargeRate = e.Reader.ReadInt32();
+		MoveSpeed = e.Reader.ReadSingle();
+		VisionRange = e.Reader.ReadSingle();
 		transform.position = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		transform.rotation = new Quaternion(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		
@@ -79,8 +123,13 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		e.Writer.Write(ID);
 		e.Writer.Write(PlayerId);
 		e.Writer.Write(TeamId);
-		e.Writer.Write(CurrentHealth);
 		e.Writer.Write(MaxHealth);
+		e.Writer.Write(CurrentHealth);
+		e.Writer.Write(MaxShield);
+		e.Writer.Write(CurrentShield);
+		e.Writer.Write(ShieldRechargeRate);
+		e.Writer.Write(MoveSpeed);
+		e.Writer.Write(VisionRange);
 		e.Writer.Write(transform.position.x); e.Writer.Write(transform.position.y); e.Writer.Write(transform.position.z);
 		e.Writer.Write(transform.rotation.x); e.Writer.Write(transform.rotation.y); e.Writer.Write(transform.rotation.z); e.Writer.Write(transform.rotation.w);
 

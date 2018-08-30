@@ -58,7 +58,7 @@ public static class DatabaseManager {
 				"INNER JOIN player p ON p.player_id = pu.player_id " +
 				"INNER JOIN unit_type u ON u.unit_type = pu.unit_type " +
 				"WHERE p.external_id = @externalPlayerId " +
-				"ORDER BY pu.player_unit_id ASC";
+				"ORDER BY u.squad_cost, u.unit_type ASC";
 			MySqlCommand command = new MySqlCommand(sql, connection);
 			command.Parameters.AddWithValue("externalPlayerId", externalPlayerId);
 			MySqlDataReader reader = command.ExecuteReader();
@@ -70,8 +70,10 @@ public static class DatabaseManager {
 				playerUnit.UnitType = Convert.IsDBNull(reader["unit_type"]) ? null : reader.GetString("unit_type");
 				playerUnit.Name = Convert.IsDBNull(reader["unit_display_name"]) ? null : reader.GetString("unit_display_name");
 				playerUnit.SquadCost = Convert.IsDBNull(reader["squad_cost"]) ? 0 : reader.GetInt32("squad_cost");
-				playerUnit.MaxHealth = Convert.IsDBNull(reader["base_health"]) ? 0 : reader.GetInt32("base_health");
-				playerUnit.CurrentHealth = playerUnit.MaxHealth;
+				playerUnit.MaxHealth = playerUnit.CurrentHealth = Convert.IsDBNull(reader["base_health"]) ? 0 : reader.GetInt32("base_health");
+				playerUnit.MaxShield = Convert.IsDBNull(reader["base_shield"]) ? 0 : reader.GetInt32("base_shield");
+				playerUnit.MoveSpeed = Convert.IsDBNull(reader["base_speed"]) ? 0f : reader.GetFloat("base_speed");
+				playerUnit.VisionRange = Convert.IsDBNull(reader["base_vision"]) ? 0f : reader.GetFloat("base_vision");
 				playerUnits.Add(playerUnit);
 
 				if (!unitsByTypeMap.ContainsKey(playerUnit.UnitType)) {
@@ -126,7 +128,7 @@ public static class DatabaseManager {
 				weapon.SplashRadius = Convert.IsDBNull(reader["splash_radius"]) ? 0f : reader.GetFloat("splash_radius");
 				weapon.MaxDamage = Convert.IsDBNull(reader["max_damage"]) ? 0 : reader.GetInt32("max_damage");
 				weapon.MaxShieldDamage = Convert.IsDBNull(reader["max_shield_damage"]) ? 0 : reader.GetInt32("max_shield_damage");
-				weapon.DamageIncreaseRate = Convert.IsDBNull(reader["damage_increase_rate"]) ? 0f : reader.GetFloat("damage_increase_rate");
+				weapon.DamageIncreaseTime = Convert.IsDBNull(reader["damage_increase_time"]) ? 0f : reader.GetFloat("damage_increase_time");
 				weapons.Add(weapon);
 			}
 			reader.Close();
@@ -156,7 +158,7 @@ public static class DatabaseManager {
 				equipment.SquadCost = Convert.IsDBNull(reader["squad_cost"]) ? 0 : reader.GetInt32("squad_cost");
 				equipment.Health = Convert.IsDBNull(reader["health"]) ? 0 : reader.GetInt32("health");
 				equipment.Shield = Convert.IsDBNull(reader["shield"]) ? 0 : reader.GetInt32("shield");
-				equipment.ShieldRecharge = Convert.IsDBNull(reader["shield_recharge"]) ? 0f : reader.GetFloat("shield_recharge");
+				equipment.ShieldRechargeRate = Convert.IsDBNull(reader["shield_recharge_rate"]) ? 0 : reader.GetInt32("shield_recharge_rate");
 				equipment.MoveSpeed = Convert.IsDBNull(reader["move_speed"]) ? 0f : reader.GetFloat("move_speed");
 				equipment.VisionRange = Convert.IsDBNull(reader["vision_range"]) ? 0f : reader.GetFloat("vision_range");
 				equipment.Ability = Convert.IsDBNull(reader["ability"]) ? null : reader.GetString("ability");
@@ -232,7 +234,7 @@ public static class DatabaseManager {
 					weapon.SplashRadius = Convert.IsDBNull(reader["splash_radius"]) ? 0f : reader.GetFloat("splash_radius");
 					weapon.MaxDamage = Convert.IsDBNull(reader["max_damage"]) ? 0 : reader.GetInt32("max_damage");
 					weapon.MaxShieldDamage = Convert.IsDBNull(reader["max_shield_damage"]) ? 0 : reader.GetInt32("max_shield_damage");
-					weapon.DamageIncreaseRate = Convert.IsDBNull(reader["damage_increase_rate"]) ? 0f : reader.GetFloat("damage_increase_rate");
+					weapon.DamageIncreaseTime = Convert.IsDBNull(reader["damage_increase_time"]) ? 0f : reader.GetFloat("damage_increase_time");
 					structureWeapons.Add(weapon);
 				}
 				reader.Close();
