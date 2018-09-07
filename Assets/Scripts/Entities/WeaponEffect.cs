@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class WeaponEffect {
 	public string weaponType;
+	public bool isContinuousEffect = false;
 	public GameObject projectilePrefab;
 	public List<Transform> projectileSpawnPoints = new List<Transform>();
 	public List<GameObject> existingProjectiles = new List<GameObject>();

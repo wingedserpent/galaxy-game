@@ -1559,6 +1559,7 @@ MonoBehaviour:
     type: 2}
   weaponEffects:
   - weaponType: ballistic
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
       type: 2}
     projectileSpawnPoints:
@@ -1567,14 +1568,16 @@ MonoBehaviour:
     attackEffectTime: 0.1
     attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
   - weaponType: laser
-    projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
+    isContinuousEffect: 1
+    projectilePrefab: {fileID: 1117067951064828, guid: 7b67763fe02bdb64dbbf7d5728e79cfd,
       type: 2}
     projectileSpawnPoints:
     - {fileID: 4402722559298316}
     existingProjectiles: []
-    attackEffectTime: 0.1
+    attackEffectTime: 0
     attackSound: {fileID: 8300000, guid: f9dc8d9847657423fa659c4a60acf0c6, type: 3}
   - weaponType: missile
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 1231709648642028, guid: e6929d500b1c58543b6a3b20e7308664,
       type: 2}
     projectileSpawnPoints:
