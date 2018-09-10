@@ -59,9 +59,9 @@ MonoBehaviour:
   - percentage: 0.33
     widthMultiplier: 1
   - percentage: 0.66
-    widthMultiplier: 1.5
-  - percentage: 1
     widthMultiplier: 2
+  - percentage: 1
+    widthMultiplier: 3
 --- !u!120 &120606402385844902
 LineRenderer:
   m_ObjectHideFlags: 1
