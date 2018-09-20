@@ -388,7 +388,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	protected void SetActiveWeaponEffect() {
-		if (activeWeaponEffect == null) {
+		if (activeWeaponEffect == null && entity.Weapon != null) {
 			activeWeaponEffect = weaponEffects.Where(x => x.weaponType.Equals(entity.Weapon.WeaponType)).FirstOrDefault();
 			if (activeWeaponEffect != null && activeWeaponEffect.projectileSpawnPoints.Count == 0) {
 				activeWeaponEffect.projectileSpawnPoints.Add(transform);

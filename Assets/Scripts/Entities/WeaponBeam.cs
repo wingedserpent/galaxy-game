@@ -22,15 +22,19 @@ public class WeaponBeam : MonoBehaviour {
 	}
 
 	private void Update() {
-		elapsedTime += Time.deltaTime;
+		if (start == null || target == null) {
+			Destroy(gameObject);
+		} else {
+			elapsedTime += Time.deltaTime;
 
-		lineRenderer.SetPosition(0, start.position);
-		lineRenderer.SetPosition(1, (target.position + start.position)/2);
-		lineRenderer.SetPosition(2, target.position);
+			lineRenderer.SetPosition(0, start.position);
+			lineRenderer.SetPosition(1, (target.position + start.position) / 2);
+			lineRenderer.SetPosition(2, target.position);
 
-		if (currentStageIndex < stages.Count && (elapsedTime / totalEffectTime) >= stages[currentStageIndex].percentage) {
-			lineRenderer.widthMultiplier = stages[currentStageIndex].widthMultiplier;
-			currentStageIndex++;
+			if (currentStageIndex < stages.Count && (elapsedTime / totalEffectTime) >= stages[currentStageIndex].percentage) {
+				lineRenderer.widthMultiplier = stages[currentStageIndex].widthMultiplier;
+				currentStageIndex++;
+			}
 		}
 	}
 }

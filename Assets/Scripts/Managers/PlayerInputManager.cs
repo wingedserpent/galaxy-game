@@ -140,6 +140,8 @@ public class PlayerInputManager : MonoBehaviour {
 												DeselectEntity(hitEntity, true);
 											}
 										}
+
+										uiManager.UpdateSelectedEntities(SelectedEntities);
 									} else {
 										//selection box is too small, do point selection
 										Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -154,6 +156,8 @@ public class PlayerInputManager : MonoBehaviour {
 												}
 											}
 										}
+
+										uiManager.UpdateSelectedEntities(SelectedEntities);
 									}
 								}
 
@@ -286,6 +290,15 @@ public class PlayerInputManager : MonoBehaviour {
 		if (alsoStopSelecting) {
 			isSelecting = false;
 		}
+
+		uiManager.UpdateSelectedEntities(SelectedEntities);
+	}
+
+	public void ForceSelectedEntity(Entity entity) {
+		DeselectAll(true);
+		SelectEntity(entity);
+
+		uiManager.UpdateSelectedEntities(SelectedEntities);
 	}
 
 	private void IssueMoveCommand(List<string> entityIds, Vector3 target) {

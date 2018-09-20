@@ -8,9 +8,11 @@ using UnityEngine.SceneManagement;
 
 public class UIManager : Singleton<UIManager> {
 
+	public PlayerInputManager playerInputManager;
 	public ConnectionMenuController connectionMenuController;
 	public SquadMenuController squadMenuController;
 	public CustomizationMenuController customizationMenuController;
+	public InfoWindowController infoWindowController;
 	public ChatWindowController chatWindowController;
 	public PlayerListController playerListController;
 	public Text scoreDisplay;
@@ -62,6 +64,18 @@ public class UIManager : Singleton<UIManager> {
 		}
 
 		resourceDisplay.text = "Resources:\n" + clientGameManager.MyPlayer.Resources;
+	}
+
+	public void OpenInfoWindow() {
+		infoWindowController.OpenWindow();
+	}
+
+	public void UpdateSelectedEntities(List<Entity> selectedEntities) {
+		infoWindowController.UpdateSelectedEntities(selectedEntities);
+	}
+
+	public void OnEntityPortraitClick(Entity entity) {
+		playerInputManager.ForceSelectedEntity(entity);
 	}
 
 	public void OpenChatWindow() {
