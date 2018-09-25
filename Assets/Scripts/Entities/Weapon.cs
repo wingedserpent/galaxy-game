@@ -16,6 +16,7 @@ public class Weapon : IDarkRiftSerializable {
 	public int MaxDamage { get; set; }
 	public int MaxShieldDamage { get; set; }
 	public float DamageIncreaseTime { get; set; }
+	public bool IsEquipped { get; set; }
 
 	public void Deserialize(DeserializeEvent e) {
 		Name = e.Reader.ReadString();
@@ -29,6 +30,7 @@ public class Weapon : IDarkRiftSerializable {
 		MaxDamage = e.Reader.ReadInt32();
 		MaxShieldDamage = e.Reader.ReadInt32();
 		DamageIncreaseTime = e.Reader.ReadSingle();
+		IsEquipped = e.Reader.ReadBoolean();
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -43,5 +45,6 @@ public class Weapon : IDarkRiftSerializable {
 		e.Writer.Write(MaxDamage);
 		e.Writer.Write(MaxShieldDamage);
 		e.Writer.Write(DamageIncreaseTime);
+		e.Writer.Write(IsEquipped);
 	}
 }

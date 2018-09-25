@@ -14,6 +14,7 @@ public class Equipment : IDarkRiftSerializable {
 	public float MoveSpeed { get; set; }
 	public float VisionRange { get; set; }
 	public string Ability { get; set; }
+	public bool IsEquipped { get; set; }
 
 	public void Deserialize(DeserializeEvent e) {
 		Name = e.Reader.ReadString();
@@ -28,6 +29,7 @@ public class Equipment : IDarkRiftSerializable {
 		if (Ability.Equals("")) {
 			Ability = null;
 		}
+		IsEquipped = e.Reader.ReadBoolean();
 	}
 
 	public void Serialize(SerializeEvent e) {
@@ -40,5 +42,6 @@ public class Equipment : IDarkRiftSerializable {
 		e.Writer.Write(MoveSpeed);
 		e.Writer.Write(VisionRange);
 		e.Writer.Write(Ability != null ? Ability : "");
+		e.Writer.Write(IsEquipped);
 	}
 }

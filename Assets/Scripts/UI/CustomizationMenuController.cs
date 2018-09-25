@@ -14,11 +14,7 @@ public class CustomizationMenuController : Singleton<CustomizationMenuController
 
 	public UnitSelector UnitSelector { get; set; }
 
-	private int squadCost;
-
 	public void OpenMenu() {
-		int initialCost = UnitSelector.PlayerUnit.SquadCost;
-
 		foreach (Weapon weapon in UnitSelector.PlayerUnit.WeaponOptions) {
 			WeaponOption weaponOption = Instantiate<GameObject>(weaponOptionPrefab.gameObject, weaponContainer).GetComponent<WeaponOption>();
 			weaponOption.CustomizationMenuController = this;
@@ -26,7 +22,6 @@ public class CustomizationMenuController : Singleton<CustomizationMenuController
 			weaponOption.GetComponent<Toggle>().group = weaponContainer.GetComponent<ToggleGroup>();
 			if (weapon.Name.Equals(UnitSelector.SelectedPlayerUnit.WeaponSelection)) {
 				weaponOption.GetComponent<Toggle>().isOn = true;
-				initialCost += weapon.SquadCost;
 			}
 		}
 
@@ -36,12 +31,10 @@ public class CustomizationMenuController : Singleton<CustomizationMenuController
 			equipmentOption.Equipment = equipment;
 			if (UnitSelector.SelectedPlayerUnit.EquipmentSelections.Contains(equipment.Name)) {
 				equipmentOption.GetComponent<Toggle>().isOn = true;
-				initialCost += equipment.SquadCost;
 			}
 		}
 
-		UpdateSquadCost(initialCost);
-		UnitSelector.UpdateSquadCost(initialCost);
+		UpdateSquadCost();
 
 		gameObject.SetActive(true);
 	}
@@ -49,44 +42,41 @@ public class CustomizationMenuController : Singleton<CustomizationMenuController
 	private void CloseMenu() {
 		gameObject.SetActive(false);
 
-		UnitSelector = null;
+		UpdateSquadCost();
+
 		foreach (WeaponOption weaponOption in weaponContainer.GetComponentsInChildren<WeaponOption>()) {
 			Destroy(weaponOption.gameObject);
 		}
 		foreach (EquipmentOption equipmentOption in equipmentContainer.GetComponentsInChildren<EquipmentOption>()) {
 			Destroy(equipmentOption.gameObject);
 		}
-
-		UpdateSquadCost(0);
+		
+		UnitSelector = null;
 	}
 
 	public void OnWeaponOptionSelected(WeaponOption weaponOption) {
 		UnitSelector.SelectedPlayerUnit.WeaponSelection = weaponOption.Weapon.Name;
-		UpdateSquadCost(squadCost + weaponOption.Weapon.SquadCost);
-		UnitSelector.UpdateSquadCost(squadCost);
+		UpdateSquadCost();
 	}
 
 	public void OnWeaponOptionDeselected(WeaponOption weaponOption) {
 		if (UnitSelector.SelectedPlayerUnit.WeaponSelection.Equals(weaponOption.Weapon.Name)) {
 			UnitSelector.SelectedPlayerUnit.WeaponSelection = null;
+			UpdateSquadCost();
 		}
-		UpdateSquadCost(squadCost - weaponOption.Weapon.SquadCost);
-		UnitSelector.UpdateSquadCost(squadCost);
 	}
 
 	public void OnEquipmentOptionSelected(EquipmentOption equipmentOption) {
 		if (!UnitSelector.SelectedPlayerUnit.EquipmentSelections.Contains(equipmentOption.Equipment.Name)) {
 			UnitSelector.SelectedPlayerUnit.EquipmentSelections.Add(equipmentOption.Equipment.Name);
-			UpdateSquadCost(squadCost + equipmentOption.Equipment.SquadCost);
-			UnitSelector.UpdateSquadCost(squadCost);
+			UpdateSquadCost();
 		}
 	}
 
 	public void OnEquipmentOptionDeselected(EquipmentOption equipmentOption) {
 		if (UnitSelector.SelectedPlayerUnit.EquipmentSelections.Contains(equipmentOption.Equipment.Name)) {
 			UnitSelector.SelectedPlayerUnit.EquipmentSelections.Remove(equipmentOption.Equipment.Name);
-			UpdateSquadCost(squadCost - equipmentOption.Equipment.SquadCost);
-			UnitSelector.UpdateSquadCost(squadCost);
+			UpdateSquadCost();
 		}
 	}
 
@@ -94,8 +84,8 @@ public class CustomizationMenuController : Singleton<CustomizationMenuController
 		CloseMenu();
 	}
 
-	private void UpdateSquadCost(int newCost) {
-		squadCost = newCost;
-		squadCostText.text = "Total Unit Cost: " + squadCost;
+	private void UpdateSquadCost() {
+		UnitSelector.RecalculateSquadCost();
+		squadCostText.text = "Total Unit Cost: " + UnitSelector.SquadCost;
 	}
 }

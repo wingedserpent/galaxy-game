@@ -11,8 +11,9 @@ public class UnitSelector : MonoBehaviour {
 
 	private PlayerUnit _playerUnit;
 	private int _playerUnitId;
+	private int _baseSquadCost;
 	private string _unitName;
-	private int _squadCost;
+	private int _totalSquadCost;
 
 	public SelectedPlayerUnit SelectedPlayerUnit { get; private set; }
 	public Toggle Toggle { get; set; }
@@ -27,12 +28,21 @@ public class UnitSelector : MonoBehaviour {
 			SelectedPlayerUnit = new SelectedPlayerUnit();
 			SelectedPlayerUnit.PlayerUnitId = _playerUnit.PlayerUnitId;
 			SelectedPlayerUnit.UnitType = _playerUnit.UnitType;
-			if (_playerUnit.WeaponOptions.Count > 0) {
-				SelectedPlayerUnit.WeaponSelection = _playerUnit.WeaponOptions[0].Name;
+
+			Weapon equippedWeapon = _playerUnit.WeaponOptions.Where(x => x.IsEquipped).FirstOrDefault();
+			if (equippedWeapon == null) {
+				equippedWeapon = _playerUnit.WeaponOptions[0];
 			}
+			SelectedPlayerUnit.WeaponSelection = equippedWeapon.Name;
+			
+			SelectedPlayerUnit.EquipmentSelections = _playerUnit.EquipmentOptions.Where(x => x.IsEquipped).Select(x => x.Name).ToList();
+
 			_playerUnitId = _playerUnit.PlayerUnitId;
+			_baseSquadCost = _playerUnit.SquadCost;
 			UnitName = _playerUnit.Name;
 			SquadCost = _playerUnit.SquadCost;
+
+			RecalculateSquadCost();
 		}
 	}
 	public string UnitName {
@@ -46,11 +56,11 @@ public class UnitSelector : MonoBehaviour {
 	}
 	public int SquadCost {
 		get {
-			return _squadCost;
+			return _totalSquadCost;
 		}
 		private set {
-			_squadCost = value;
-			squadCostText.text = _squadCost.ToString();
+			_totalSquadCost = value;
+			squadCostText.text = _totalSquadCost.ToString();
 		}
 	}
 
@@ -72,8 +82,10 @@ public class UnitSelector : MonoBehaviour {
 		custMenu.OpenMenu();
 	}
 
-	public void UpdateSquadCost(int newCost) {
-		SquadCost = newCost;
+	public void RecalculateSquadCost() {
+		SquadCost = _baseSquadCost
+					+ _playerUnit.WeaponOptions.Where(x => x.Name.Equals(SelectedPlayerUnit.WeaponSelection)).Sum(x => x.SquadCost)
+					+ _playerUnit.EquipmentOptions.Where(x => SelectedPlayerUnit.EquipmentSelections.Contains(x.Name)).Sum(x => x.SquadCost);
 		SquadMenuController.OnUnitUpdated(this);
 	}
 	
