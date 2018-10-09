@@ -13,7 +13,7 @@ public class EquipmentOption : MonoBehaviour {
 	private string _equipmentName;
 	private int _squadCost;
 	
-	public CustomizationMenuController CustomizationMenuController { get; set; }
+	public ICustomizationMenu CustomizationMenu { get; set; }
 
 	public Equipment Equipment {
 		get {
@@ -46,9 +46,9 @@ public class EquipmentOption : MonoBehaviour {
 
 	public void OnToggle(bool on) {
 		if (on) {
-			CustomizationMenuController.OnEquipmentOptionSelected(this);
+			CustomizationMenu.OnEquipmentOptionSelected(this);
 		} else {
-			CustomizationMenuController.OnEquipmentOptionDeselected(this);
+			CustomizationMenu.OnEquipmentOptionDeselected(this);
 		}
 	}
 

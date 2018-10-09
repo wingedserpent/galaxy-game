@@ -9,6 +9,7 @@ public class InfoWindowController : MonoBehaviour {
 	public Text nameText;
 	public Text healthText;
 	public Text shieldText;
+	public Text buildMenuText;
 	public RectTransform entityMultiPortraitContainer;
 	public EntityMultiPortrait entityMultiPortraitPrefab;
 
@@ -24,13 +25,37 @@ public class InfoWindowController : MonoBehaviour {
 	private void Update() {
 		if (selectedSingleEntity != null) {
 			PopulateSingleEntityFields();
-		} else if (entityMultiPortraits.Count > 0) {
+		} else {
+			ClearSingleEntityFields();
+		}
+
+		if (entityMultiPortraits.Count > 0) {
+			//remove any missing (i.e. dead) entities
+			List<string> missingEntities = entityMultiPortraits.Where(x => x.Value.Entity == null).Select(x => x.Key).ToList();
+			foreach (string missingEntity in missingEntities) {
+				Destroy(entityMultiPortraits[missingEntity].gameObject);
+				entityMultiPortraits.Remove(missingEntity);
+			}
+
 			PopulateMultipleEntityFields();
 		}
 	}
 
 	public void OpenWindow() {
 		gameObject.SetActive(true);
+	}
+
+	public void OpenBuildMenu(List<BuildCommand> buildCommands) {
+		buildMenuText.gameObject.SetActive(true);
+
+		buildMenuText.text = "";
+		foreach (BuildCommand buildCommand in buildCommands) {
+			buildMenuText.text += buildCommand.key + " - " + buildCommand.structureTypeId;
+		}
+	}
+
+	public void CloseBuildMenu() {
+		buildMenuText.gameObject.SetActive(false);
 	}
 
 	public void UpdateSelectedEntities(List<Entity> newEntities) {

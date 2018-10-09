@@ -365,7 +365,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected void OnDestroy() {
 		VisibilityManager.VisibilityTargetDispatch -= VisibilityTargetDispatch;
 
-		if (!isQuitting) {
+		if (!isQuitting && (OverallStateManager.Instance == null || !OverallStateManager.Instance.IsInSceneTransition)) {
 			if (deathEffectPrefab != null) {
 				Instantiate<GameObject>(deathEffectPrefab.gameObject, transform.position, transform.rotation);
 			}

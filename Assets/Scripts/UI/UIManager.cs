@@ -31,7 +31,9 @@ public class UIManager : Singleton<UIManager> {
 	private void Start() {
 		clientGameManager = ClientGameManager.Instance;
 
-		OpenConnectionMenu();
+		if (!ClientNetworkManager.Instance.IsConnectedToServer) {
+			OpenConnectionMenu();
+		}
 	}
 
 	public void OpenConnectionMenu() {
@@ -45,7 +47,7 @@ public class UIManager : Singleton<UIManager> {
 
 	public void OpenSquadMenu(int maxSquadCost = 0) {
 		IsUIReceivingInput = true;
-		squadMenuController.OpenMenu(maxSquadCost);
+		squadMenuController.OpenMenu();
 	}
 
 	public void OnUnitListReceived(List<PlayerUnit> playerUnits) {
@@ -76,6 +78,14 @@ public class UIManager : Singleton<UIManager> {
 
 	public void OnEntityPortraitClick(Entity entity) {
 		playerInputManager.ForceSelectedEntity(entity);
+	}
+
+	public void OpenBuildMenu(List<BuildCommand> buildCommands) {
+		infoWindowController.OpenBuildMenu(buildCommands);
+	}
+
+	public void CloseBuildMenu() {
+		infoWindowController.CloseBuildMenu();
 	}
 
 	public void OpenChatWindow() {

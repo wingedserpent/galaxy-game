@@ -13,11 +13,14 @@ public class PlayerInputManager : MonoBehaviour {
 	public LayerMask clickableLayers;
 	public LayerMask groundLayers;
 	public LayerMask constructionOverlapLayers;
+	public List<BuildCommand> buildCommands;
 
 	private List<Entity> SelectedEntities { get; set; }
 	private Entity LastFocusedEntity;
 	private bool isSelecting = false;
 	private Vector3 mouseStartPosition;
+
+	private bool isInBuildMode = false;
 	private GameObject currentConstruction;
 	private Collider currentConstructionCollider;
 	private string currentConstructionTypeId;
@@ -69,11 +72,15 @@ public class PlayerInputManager : MonoBehaviour {
 
 				//cancel should override all other inputs
 				if (Input.GetButtonDown("Cancel")) {
-					DeselectAll(true);
-					LastFocusedEntity = null;
-					rtsCamera.ClearFollowTarget();
-					if (currentConstruction != null) {
-						Destroy(currentConstruction);
+					if (isInBuildMode) {
+						CancelBuildMode();
+					} else {
+						DeselectAll(true);
+						LastFocusedEntity = null;
+						rtsCamera.ClearFollowTarget();
+						if (currentConstruction != null) {
+							Destroy(currentConstruction);
+						}
 					}
 				} else {
 					if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
@@ -86,6 +93,7 @@ public class PlayerInputManager : MonoBehaviour {
 									IssueConstructionRequest(currentConstructionTypeId, currentConstruction.transform.position);
 								}
 								Destroy(currentConstruction);
+								CancelBuildMode();
 							} else if (Input.GetMouseButtonDown(1)) {
 								Destroy(currentConstruction);
 							} else {
@@ -113,9 +121,12 @@ public class PlayerInputManager : MonoBehaviour {
 						} else {
 							//mouse-related inputs
 							if (Input.GetMouseButtonDown(0)) {
+								CancelBuildMode();
 								isSelecting = true;
 								mouseStartPosition = Input.mousePosition;
-							} else if (Input.GetMouseButtonUp(0)) {
+							}
+
+							if (Input.GetMouseButtonUp(0)) {
 								bool isMultiselecting = Input.GetButton("Multiselect");
 
 								if (!isMultiselecting) {
@@ -127,7 +138,7 @@ public class PlayerInputManager : MonoBehaviour {
 									if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
 										//selection box is large enough, select entities inside
 										IEnumerable<Entity> entitiesToConsider;
-										if (clientGameManager.IsOfflineTest) {
+										if (OverallStateManager.Instance.IsOfflineTest) {
 											entitiesToConsider = FindObjectsOfType<Entity>();
 										} else {
 											entitiesToConsider = clientEntityManager.MySquad.Values;
@@ -181,18 +192,26 @@ public class PlayerInputManager : MonoBehaviour {
 									}
 								}
 							}
-						}
+						} //end current construction is null
 					} //end UI element check
 
 					//inputs that can be accepted even when hovering mouse over ui element
-					if (Input.GetButtonDown("BuildTurret")) {
-						currentConstructionTypeId = "turret";
-						//check resource cost
-						Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
-						if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-							DeselectAll(true);
-							currentConstruction = clientEntityManager.SpawnConstruction(currentConstructionTypeId);
-							currentConstructionCollider = currentConstruction.GetComponentInChildren<Collider>();
+					if (Input.GetButtonDown("Build")) {
+						DeselectAll();
+						isInBuildMode = true;
+						uiManager.OpenBuildMenu(buildCommands);
+					} else if (isInBuildMode) {
+						foreach (BuildCommand buildCommand in buildCommands) {
+							if (Input.GetKeyDown(buildCommand.key)) {
+								currentConstructionTypeId = buildCommand.structureTypeId;
+								//check resource cost
+								Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
+								if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
+									DeselectAll(true);
+									currentConstruction = clientEntityManager.SpawnConstruction(currentConstructionTypeId);
+									currentConstructionCollider = currentConstruction.GetComponentInChildren<Collider>();
+								}
+							}
 						}
 					}
 
@@ -258,6 +277,11 @@ public class PlayerInputManager : MonoBehaviour {
 				renderer.material.color = color;
 			}
 		}
+	}
+
+	private void CancelBuildMode() {
+		isInBuildMode = false;
+		uiManager.CloseBuildMenu();
 	}
 
 	private void SelectEntity(Entity entity) {

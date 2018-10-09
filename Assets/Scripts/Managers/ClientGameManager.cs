@@ -6,11 +6,8 @@ using System.Linq;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public delegate void OnGameStateInitialized();
-
 public class ClientGameManager : Singleton<ClientGameManager> {
 	
-	public bool IsOfflineTest { get; private set; }
 	public bool IsAcceptingGameInput { get; private set; }
 	public GameStates ClientState { get; private set; }
 	public GameState GameState { get; private set; }
@@ -22,7 +19,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 
 	protected override void Awake() {
 		base.Awake();
-		IsOfflineTest = false;
+		
 		IsAcceptingGameInput = false;
 		ClientState = GameStates.WAITING_FOR_PLAYERS;
 	}
@@ -56,14 +53,13 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 
 	private void StartGame(bool hasSpawnedEntities) {
 		if (!hasSpawnedEntities) {
-			uiManager.OpenSquadMenu(MyPlayer.MaxSquadCost);
+			uiManager.OpenSquadMenu();
 		}
 		ClientState = GameStates.GAME_IN_PROGRESS;
 		IsAcceptingGameInput = true;
 	}
 
 	public void StartOfflineTest() {
-		IsOfflineTest = true;
 		MyPlayer = new Player("ZZZZ", "Offline Tester");
 		MyPlayer.TeamId = 1;
 		MyPlayer.Resources = 9999;
@@ -74,14 +70,8 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 	public void EndGame() {
 		ClientState = GameStates.GAME_COMPLETED;
 		IsAcceptingGameInput = false;
-		
-		uiManager.AddSystemMessage("Game Over! Restarting in 10 seconds...");
-
-		Invoke("RestartGame", 10f);
-	}
-
-	private void RestartGame() {
-		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
+		uiManager.AddSystemMessage("Game Over! Exiting to menu in 10 seconds...");
+		OverallStateManager.Instance.OnGameEnd();
 	}
 
 	public void OnPlayerJoined(Player player) {

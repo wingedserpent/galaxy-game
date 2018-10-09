@@ -6,6 +6,7 @@ using System.Linq;
 using DarkRift.Client.Unity;
 using DarkRift.Client;
 using System;
+using UnityEngine.SceneManagement;
 
 public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 
@@ -20,8 +21,8 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 	public event OnServerJoinFailure ServerJoinFailure = delegate { };
 
 	public bool IsConnectedToServer { get; private set; } //have we connected to server and also validated matchmaking ticket?
-	private ClientGameManager clientGameManager;
-	private ClientEntityManager entityManager;
+	
+	private bool waitingToJoin = false;
 
 	protected override void Awake() {
 		base.Awake();
@@ -29,9 +30,6 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 	}
 
 	private void Start() {
-		clientGameManager = ClientGameManager.Instance;
-		entityManager = ClientEntityManager.Instance;
-		
 		client.MessageReceived += DarkRift_MessageReceived;
 	}
 
@@ -42,26 +40,28 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 			}
 
 			try {
+				Debug.Log("DarkRift: Requesting to join server at IP address: " + ipAddress);
+				ServerJoinUpdate?.Invoke("DarkRift: Requesting to join server at IP address: " + ipAddress);
 				client.Connect(System.Net.IPAddress.Parse(ipAddress), client.Port, client.IPVersion);
-				if (client.Connected) {
-					Debug.Log("DarkRift: Requesting to join server at IP address: " + ipAddress);
-					ServerJoinUpdate?.Invoke("DarkRift: Requesting to join server at IP address: " + ipAddress);
-
-					using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
-						writer.Write(matchmakerTicket);
-						
-						using (Message message = Message.Create(NetworkTags.Connection, writer)) {
-							client.SendMessage(message, SendMode.Reliable);
-						}
-					}
-				} else {
-					Debug.LogError("DarkRift: Connection failed to server at IP address: " + ipAddress);
-					ServerJoinFailure?.Invoke("DarkRift: Connection failed to server at IP address: " + ipAddress);
-				}
 			} catch (System.Exception e) {
 				Debug.LogError("DarkRift: Connection failed to server at IP address: " + ipAddress + "\nError: " + e);
 				ServerJoinFailure?.Invoke("DarkRift: Connection failed to server at IP address: " + ipAddress);
 			}
+		}
+
+		if (client.Connected) {
+			Debug.Log("DarkRift: Writing matchmaker ticket to server...");
+			ServerJoinUpdate?.Invoke("DarkRift: Writing matchmaker ticket to server...");
+			using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+				writer.Write(matchmakerTicket);
+
+				using (Message message = Message.Create(NetworkTags.Connection, writer)) {
+					client.SendMessage(message, SendMode.Reliable);
+				}
+			}
+		} else {
+			Debug.LogError("DarkRift: Connection failed to server at IP address: " + ipAddress);
+			ServerJoinFailure?.Invoke("DarkRift: Connection failed to server at IP address: " + ipAddress);
 		}
 	}
 
@@ -78,46 +78,67 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 	void DarkRift_MessageReceived(object sender, MessageReceivedEventArgs e) {
 		using (Message message = e.GetMessage())
 		using (DarkRiftReader reader = message.GetReader()) {
-			if (clientGameManager.ClientState == GameStates.GAME_IN_PROGRESS || clientGameManager.ClientState == GameStates.WAITING_FOR_PLAYERS) {
-				//game is in progress
-				if (message.Tag == NetworkTags.EntityUpdate) {
-					while (reader.Position < reader.Length) {
-						string entityId = reader.ReadString();
-						string entityTypeId = reader.ReadString();
-						Entity entity = entityManager.GetEntity(entityId);
-						if (entity == null) {
-							entity = entityManager.CreateEntity(entityTypeId);
-							reader.ReadSerializableInto(ref entity); //must populate entity before registering since registration depends on entity data
-							entityManager.RegisterEntity(entity);
-						} else {
-							reader.ReadSerializableInto(ref entity);
+			if (OverallStateManager.Instance.OverallState == OverallState.IN_GAME) {
+				if (ClientGameManager.Instance.ClientState == GameStates.GAME_IN_PROGRESS
+					|| ClientGameManager.Instance.ClientState == GameStates.WAITING_FOR_PLAYERS) {
+					//game is in progress
+					if (message.Tag == NetworkTags.EntityUpdate) {
+						ClientEntityManager entityManager = ClientEntityManager.Instance;
+						while (reader.Position < reader.Length) {
+							string entityId = reader.ReadString();
+							string entityTypeId = reader.ReadString();
+							Entity entity = entityManager.GetEntity(entityId);
+							if (entity == null) {
+								entity = entityManager.CreateEntity(entityTypeId);
+								reader.ReadSerializableInto(ref entity); //must populate entity before registering since registration depends on entity data
+								entityManager.RegisterEntity(entity);
+							} else {
+								reader.ReadSerializableInto(ref entity);
+							}
 						}
+					} else if (message.Tag == NetworkTags.EntityDeath) {
+						ClientEntityManager.Instance.HandleEntityDeath(reader.ReadString());
+					} else if (message.Tag == NetworkTags.CapturePoint) {
+						while (reader.Position < reader.Length) {
+							CapturePoint capturePoint = ClientGameManager.Instance.CapturePoints[reader.ReadUInt16()];
+							reader.ReadSerializableInto(ref capturePoint);
+						}
+					} else if (message.Tag == NetworkTags.GameState) {
+						ClientGameManager.Instance.UpdateGameState(reader.ReadSerializable<GameState>(), reader.ReadBoolean());
 					}
-				} else if (message.Tag == NetworkTags.EntityDeath) {
-					entityManager.HandleEntityDeath(reader.ReadString());
-				} else if (message.Tag == NetworkTags.CapturePoint) {
+				}
+
+				if (message.Tag == NetworkTags.ChatMessage) {
+					UIManager.Instance.AddChatMessage(ClientGameManager.Instance.GameState.GetPlayer(reader.ReadString()), reader.ReadString());
+				} else if (message.Tag == NetworkTags.UnitList) {
+					List<PlayerUnit> playerUnits = new List<PlayerUnit>();
 					while (reader.Position < reader.Length) {
-						CapturePoint capturePoint = clientGameManager.CapturePoints[reader.ReadUInt16()];
-						reader.ReadSerializableInto(ref capturePoint);
+						playerUnits.Add(reader.ReadSerializable<PlayerUnit>());
 					}
-				} else if (message.Tag == NetworkTags.GameState) {
-					clientGameManager.UpdateGameState(reader.ReadSerializable<GameState>(), reader.ReadBoolean());
+					UIManager.Instance.OnUnitListReceived(playerUnits);
+				} else if (message.Tag == NetworkTags.PlayerJoined) {
+					ClientGameManager.Instance.OnPlayerJoined(reader.ReadSerializable<Player>());
+				} else if (message.Tag == NetworkTags.PlayerLeft) {
+					ClientGameManager.Instance.OnPlayerLeft(reader.ReadSerializable<Player>());
+				}
+			} else if (OverallStateManager.Instance.OverallState != OverallState.IN_GAME) {
+				if (waitingToJoin) {
+					if (message.Tag == NetworkTags.GameState) {
+						waitingToJoin = false;
+						OverallStateManager.Instance.LoadGame(reader.ReadSerializable<GameState>(), reader.ReadBoolean());
+					}
+				} else {
+					if (message.Tag == NetworkTags.FullUnitList) {
+						List<PlayerUnit> playerUnits = new List<PlayerUnit>();
+						while (reader.Position < reader.Length) {
+							playerUnits.Add(reader.ReadSerializable<PlayerUnit>());
+						}
+						MainMenuManager.Instance.OnUnitListReceived(playerUnits);
+					}
 				}
 			}
 
-			if (message.Tag == NetworkTags.ChatMessage) {
-				UIManager.Instance.AddChatMessage(clientGameManager.GameState.GetPlayer(reader.ReadString()), reader.ReadString());
-			} else if (message.Tag == NetworkTags.UnitList) {
-				List<PlayerUnit> playerUnits = new List<PlayerUnit>();
-				while (reader.Position < reader.Length) {
-					playerUnits.Add(reader.ReadSerializable<PlayerUnit>());
-				}
-				UIManager.Instance.OnUnitListReceived(playerUnits);
-			} else if (message.Tag == NetworkTags.PlayerJoined) {
-				clientGameManager.OnPlayerJoined(reader.ReadSerializable<Player>());
-			} else if (message.Tag == NetworkTags.PlayerLeft) {
-				clientGameManager.OnPlayerLeft(reader.ReadSerializable<Player>());
-			} else if (message.Tag == NetworkTags.Connection) {
+			if (message.Tag == NetworkTags.Connection) {
 				//Response to join request indicating if our matchmaking ticket was valid
 				if (reader.ReadBoolean()) {
 					IsConnectedToServer = true;
@@ -133,6 +154,15 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 		}
 	}
 
+	public void SendJoinGameRequest() {
+		waitingToJoin = true;
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			using (Message message = Message.Create(NetworkTags.JoinGame, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
+
 	public void SendCommand(Command command) {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 			writer.Write(command);
@@ -143,10 +173,10 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 		}
 	}
 
-	public bool RequestUnitList() {
+	public void RequestUnitList() {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 			using (Message message = Message.Create(NetworkTags.UnitList, writer)) {
-				return client.SendMessage(message, SendMode.Reliable);
+				client.SendMessage(message, SendMode.Reliable);
 			}
 		}
 	}
@@ -179,6 +209,26 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 			writer.Write(messageText);
 
 			using (Message message = Message.Create(NetworkTags.ChatMessage, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
+
+	public void RequestAllUnits() {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			using (Message message = Message.Create(NetworkTags.FullUnitList, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
+
+	public void SendCustomizedUnits(List<SelectedPlayerUnit> selectedUnits) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			foreach (SelectedPlayerUnit selectedUnit in selectedUnits) {
+				writer.Write(selectedUnit);
+			}
+
+			using (Message message = Message.Create(NetworkTags.CustomizedUnits, writer)) {
 				client.SendMessage(message, SendMode.Reliable);
 			}
 		}

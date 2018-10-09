@@ -81,8 +81,6 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 				newUnit.ApplyEquipment();
 
 				RegisterEntity(newUnit);
-
-				DatabaseManager.SavePlayerUnit(player.ID, selectedUnit);
 			}
 		}
 	}

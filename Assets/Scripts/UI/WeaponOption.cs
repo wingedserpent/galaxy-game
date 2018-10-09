@@ -13,7 +13,7 @@ public class WeaponOption : MonoBehaviour {
 	private string _weaponName;
 	private int _squadCost;
 	
-	public CustomizationMenuController CustomizationMenuController { get; set; }
+	public ICustomizationMenu CustomizationMenu { get; set; }
 
 	public Weapon Weapon {
 		get {
@@ -46,9 +46,9 @@ public class WeaponOption : MonoBehaviour {
 
 	public void OnToggle(bool on) {
 		if (on) {
-			CustomizationMenuController.OnWeaponOptionSelected(this);
+			CustomizationMenu.OnWeaponOptionSelected(this);
 		} else {
-			CustomizationMenuController.OnWeaponOptionDeselected(this);
+			CustomizationMenu.OnWeaponOptionDeselected(this);
 		}
 	}
 

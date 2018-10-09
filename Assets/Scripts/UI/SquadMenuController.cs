@@ -17,11 +17,7 @@ public class SquadMenuController : MonoBehaviour {
 	private List<UnitSelector> selectedUnits = new List<UnitSelector>();
 	private int squadCost;
 
-	public void OpenMenu(int maxSquadCost = 0) {
-		if (maxSquadCost > 0) {
-			MaxSquadCost = maxSquadCost;
-		}
-
+	public void OpenMenu() {
 		ClientNetworkManager.Instance.RequestUnitList();
 	}
 
@@ -36,6 +32,8 @@ public class SquadMenuController : MonoBehaviour {
 	}
 
 	public void OnUnitListReceived(List<PlayerUnit> playerUnits) {
+		MaxSquadCost = ClientGameManager.Instance.MyPlayer.MaxSquadCost;
+
 		gameObject.SetActive(true);
 
 		foreach (PlayerUnit playerUnit in playerUnits) {

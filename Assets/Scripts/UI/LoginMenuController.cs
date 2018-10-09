@@ -5,10 +5,16 @@ using UnityEngine.UI;
 using System.Linq;
 using RTSCam;
 
-public class ConnectionMenuController : MonoBehaviour {
+public class LoginMenuController : MonoBehaviour {
 
 	public InputField loginNameInput;
 	public Text statusText;
+
+	private void Start() {
+		ClientNetworkManager.Instance.ServerJoinUpdate += UpdateStatusText;
+		ClientNetworkManager.Instance.ServerJoinSuccess += OnServerJoinSuccess;
+		ClientNetworkManager.Instance.ServerJoinFailure += UpdateStatusText;
+	}
 
 	public void OpenMenu() {
 		gameObject.SetActive(true);
@@ -16,15 +22,17 @@ public class ConnectionMenuController : MonoBehaviour {
 
 	private void CloseMenu() {
 		gameObject.SetActive(false);
-
-		UIManager.Instance.OnConnectionMenuClosed();
+		
+		MainMenuManager.Instance.OnLoginMenuClosed();
 	}
 
+	/*
 	private void OnEnable() {
 		ClientNetworkManager.Instance.ServerJoinUpdate += UpdateStatusText;
 		ClientNetworkManager.Instance.ServerJoinSuccess += OnServerJoinSuccess;
 		ClientNetworkManager.Instance.ServerJoinFailure += UpdateStatusText;
 	}
+	*/
 
 	private void OnDisable() {
 		ClientNetworkManager.Instance.ServerJoinUpdate -= UpdateStatusText;
@@ -38,13 +46,7 @@ public class ConnectionMenuController : MonoBehaviour {
 	}
 
 	public void OnStartOfflineTest() {
-		ClientGameManager.Instance.StartOfflineTest();
-
-		CloseMenu();
-	}
-
-	public void OnQuit() {
-		Application.Quit();
+		OverallStateManager.Instance.StartOfflineTest();
 	}
 
 	private void OnServerJoinSuccess(string message) {
