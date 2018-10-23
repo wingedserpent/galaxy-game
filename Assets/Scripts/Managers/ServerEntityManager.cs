@@ -103,6 +103,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 					newStructure.SetPlayer(player);
 					newStructure.MaxHealth = structureData.MaxHealth;
 					newStructure.CurrentHealth = structureData.CurrentHealth;
+					newStructure.MaxShield = newStructure.CurrentShield = structureData.MaxShield;
+					newStructure.VisionRange = structureData.VisionRange;
 					newStructure.Weapon = structureData.WeaponOptions.FirstOrDefault();
 					RegisterEntity(newStructure);
 					

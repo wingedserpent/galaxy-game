@@ -909,7 +909,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   teamId: 2
-  teamName: Red Tean
+  teamName: Red Team
   teamColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &114269318546268138
 MonoBehaviour:

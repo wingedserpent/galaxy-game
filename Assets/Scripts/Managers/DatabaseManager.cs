@@ -199,6 +199,8 @@ public static class DatabaseManager {
 				structureData.Name = Convert.IsDBNull(reader["display_name"]) ? null : reader.GetString("display_name");
 				structureData.ResourceCost = Convert.IsDBNull(reader["resource_cost"]) ? 0 : reader.GetInt32("resource_cost");
 				structureData.MaxHealth = Convert.IsDBNull(reader["base_health"]) ? 0 : reader.GetInt32("base_health");
+				structureData.MaxShield = Convert.IsDBNull(reader["base_shield"]) ? 0 : reader.GetInt32("base_shield");
+				structureData.VisionRange = Convert.IsDBNull(reader["base_vision"]) ? 0f : reader.GetFloat("base_vision");
 				structureData.CurrentHealth = structureData.MaxHealth;
 			}
 			reader.Close();
