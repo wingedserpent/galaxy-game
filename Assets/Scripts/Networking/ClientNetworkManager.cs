@@ -96,8 +96,24 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 								reader.ReadSerializableInto(ref entity);
 							}
 						}
+					} else if (message.Tag == NetworkTags.PlayerEventUpdate) {
+						ClientEntityManager entityManager = ClientEntityManager.Instance;
+						while (reader.Position < reader.Length) {
+							string playerEventId = reader.ReadString();
+							string playerEventTypeId = reader.ReadString();
+							PlayerEvent playerEvent = entityManager.GetPlayerEvent(playerEventId);
+							if (playerEvent == null) {
+								playerEvent = entityManager.CreatePlayerEvent(playerEventTypeId);
+								reader.ReadSerializableInto(ref playerEvent); //must populate event before registering since registration depends on event data
+								entityManager.RegisterPlayerEvent(playerEvent);
+							} else {
+								reader.ReadSerializableInto(ref playerEvent);
+							}
+						}
 					} else if (message.Tag == NetworkTags.EntityDeath) {
 						ClientEntityManager.Instance.HandleEntityDeath(reader.ReadString());
+					} else if (message.Tag == NetworkTags.PlayerEventEnd) {
+						ClientEntityManager.Instance.HandlePlayerEventEnd(reader.ReadString());
 					} else if (message.Tag == NetworkTags.CapturePoint) {
 						while (reader.Position < reader.Length) {
 							CapturePoint capturePoint = ClientGameManager.Instance.CapturePoints[reader.ReadUInt16()];
@@ -163,7 +179,7 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 		}
 	}
 
-	public void SendCommand(Command command) {
+	public void SendCommand(EntityCommand command) {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 			writer.Write(command);
 
@@ -199,6 +215,17 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 			writer.Write(position.x); writer.Write(position.y); writer.Write(position.z);
 
 			using (Message message = Message.Create(NetworkTags.Construction, writer)) {
+				client.SendMessage(message, SendMode.Reliable);
+			}
+		}
+	}
+
+	public void SendPlayerEvent(string playerEventTypeId, Vector3 position) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			writer.Write(playerEventTypeId);
+			writer.Write(position.x); writer.Write(position.y); writer.Write(position.z);
+
+			using (Message message = Message.Create(NetworkTags.PlayerEvent, writer)) {
 				client.SendMessage(message, SendMode.Reliable);
 			}
 		}

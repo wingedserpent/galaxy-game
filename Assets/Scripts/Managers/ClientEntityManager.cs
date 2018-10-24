@@ -14,6 +14,7 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public Dictionary<string, Entity> MySquad { get; private set; }
 
 	private Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
+	private Dictionary<string, PlayerEvent> playerEvents = new Dictionary<string, PlayerEvent>();
 
 	private ClientGameManager clientGameManager;
 
@@ -34,14 +35,26 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		return null;
 	}
 
+	public PlayerEvent GetPlayerEvent(string playerEventId) {
+		if (playerEvents.ContainsKey(playerEventId)) {
+			return playerEvents[playerEventId];
+		}
+		return null;
+	}
+
 	public Entity CreateEntity(string entityTypeId) {
 		return entityDatabase.GetEntityInstance(entityTypeId);
 	}
 
+	public PlayerEvent CreatePlayerEvent(string playerEventTypeId) {
+		PlayerEvent playerEventRef = entityDatabase.GetPlayerEventReference(playerEventTypeId);
+		return Instantiate(playerEventRef.gameObject).GetComponent<PlayerEvent>();
+	}
+
 	public void RegisterEntity(Entity entity) {
 		if (!entities.ContainsKey(entity.ID)) {
-			ScrubEntity(entity);
-			ColorizeEntity(entity);
+			ScrubOwnedObject(entity);
+			ColorizeOwnedObject(entity);
 			entities.Add(entity.ID, entity);
 
 			if (entity.PlayerId == clientGameManager.MyPlayer.ID) {
@@ -53,9 +66,20 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 	}
 
-	protected void ColorizeEntity(Entity entity) {
-		Color teamColor = clientGameManager.GameState.Teams[entity.TeamId].Color;
-		foreach (Colorable colorable in entity.GetComponentsInChildren<Colorable>()) {
+	public void RegisterPlayerEvent(PlayerEvent playerEvent) {
+		if (!playerEvents.ContainsKey(playerEvent.ID)) {
+			ScrubOwnedObject(playerEvent);
+			ColorizeOwnedObject(playerEvent);
+			playerEvents.Add(playerEvent.ID, playerEvent);
+		} else {
+			Debug.LogWarning("A player event with ID: " + playerEvent.ID + " already exists! Destroying new player event.");
+			Destroy(playerEvent.gameObject);
+		}
+	}
+
+	protected void ColorizeOwnedObject(OwnedObject ownedObject) {
+		Color teamColor = clientGameManager.GameState.Teams[ownedObject.TeamId].Color;
+		foreach (Colorable colorable in ownedObject.GetComponentsInChildren<Colorable>()) {
 			colorable.SetColor(teamColor);
 		}
 	}
@@ -75,27 +99,30 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 	}
 
-	private void ScrubEntity(Entity entity) {
-		if (entity.TeamId == clientGameManager.MyPlayer.TeamId) {
-			//disable visibility updates for teammates since they will always be visible
-			entity.EntityController.UpdateVisibility = false;
-		} else {
-			//immediately send visibility=false update to ensure everything starts hidden
-			entity.EntityController.VisibilityTargetDispatch(null);
+	private void ScrubOwnedObject(OwnedObject ownedObject) {
+		if (ownedObject is Entity) {
+			Entity entity = ownedObject as Entity;
+			if (ownedObject.TeamId == clientGameManager.MyPlayer.TeamId) {
+				//disable visibility updates for teammates since they will always be visible
+				entity.EntityController.UpdateVisibility = false;
+			} else {
+				//immediately send visibility=false update to ensure everything starts hidden
+				entity.EntityController.VisibilityTargetDispatch(null);
+			}
 		}
 		
 		//remove any children that don't need to exist on a client
-		foreach (Transform child in entity.transform) {
-			if (child.CompareTag(CLIENT_SELF_TAG) && entity.PlayerId != clientGameManager.MyPlayer.ID) {
+		foreach (Transform child in ownedObject.transform) {
+			if (child.CompareTag(CLIENT_SELF_TAG) && ownedObject.PlayerId != clientGameManager.MyPlayer.ID) {
 				Destroy(child.gameObject);
-			} else if (child.CompareTag(CLIENT_TEAM_OR_AUTHORITY_TAG) && entity.TeamId != clientGameManager.MyPlayer.TeamId) {
+			} else if (child.CompareTag(CLIENT_TEAM_OR_AUTHORITY_TAG) && ownedObject.TeamId != clientGameManager.MyPlayer.TeamId) {
 				Destroy(child.gameObject);
 			}
 		}
 
 		//disable nav mesh agents since they can cause "jiggling" on the client screen
-		if (entity.GetComponent<NavMeshAgent>() != null) {
-			entity.GetComponent<NavMeshAgent>().enabled = false;
+		if (ownedObject.GetComponent<NavMeshAgent>() != null) {
+			ownedObject.GetComponent<NavMeshAgent>().enabled = false;
 		}
 	}
 
@@ -108,11 +135,28 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 	}
 
-	public GameObject SpawnConstruction(string entityTypeId) {
-		return entityDatabase.GetConstruction(entityTypeId);
+	public void HandlePlayerEventEnd(string playerEventId) {
+		if (playerEvents.ContainsKey(playerEventId)) {
+			PlayerEvent playerEvent = playerEvents[playerEventId];
+			playerEvent.End();
+			playerEvents.Remove(playerEventId);
+			//playerEvents will destroy themselves when effects end
+		}
+	}
+
+	public GameObject SpawnStructureTargeting(string structureTypeId) {
+		return entityDatabase.GetStructureTargeting(structureTypeId);
+	}
+
+	public GameObject SpawnPlayerEventTargeting(string playerEventTypeId) {
+		return entityDatabase.GetPlayerEventTargeting(playerEventTypeId);
 	}
 
 	public Entity GetEntityReference(string typeId) {
 		return entityDatabase.GetEntityReference(typeId);
+	}
+
+	public PlayerEvent GetPlayerEventReference(string typeId) {
+		return entityDatabase.GetPlayerEventReference(typeId);
 	}
 }

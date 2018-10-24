@@ -1523,6 +1523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: warrior
+  displayName: Warrior
   isInAir: 0
   canAttackGround: 1
   canAttackAir: 1

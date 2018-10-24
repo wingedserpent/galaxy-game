@@ -3,16 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Command : IDarkRiftSerializable {
+public class EntityCommand : IDarkRiftSerializable {
 	
 	public CommandType Type { get; set; }
 	public List<string> ActingEntityIds { get; set; }
 	public string TargetEntityId { get; set; }
 	public Vector3 Point { get; set; }
 
-	public Command() { }
+	public EntityCommand() { }
 
-	public Command(CommandType type, List<string> actingEntityIds) {
+	public EntityCommand(CommandType type, List<string> actingEntityIds) {
 		Type = type;
 		ActingEntityIds = actingEntityIds;
 	}

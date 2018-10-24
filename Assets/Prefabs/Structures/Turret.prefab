@@ -1024,6 +1024,7 @@ MonoBehaviour:
     type: 2}
   weaponEffects:
   - weaponType: ballistic
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
       type: 2}
     projectileSpawnPoints:
@@ -1078,9 +1079,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: turret
+  displayName: Turret
   isInAir: 0
   canAttackGround: 1
   canAttackAir: 0
+  shieldRechargeCooldown: 5
   resourceCost: 30
   constructionPrefab: {fileID: 1956772660735914, guid: 83fb725ef88e6a3408f0e85841693e0b,
     type: 2}

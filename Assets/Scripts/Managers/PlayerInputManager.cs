@@ -21,10 +21,11 @@ public class PlayerInputManager : MonoBehaviour {
 	private Vector3 mouseStartPosition;
 
 	private bool isInBuildMode = false;
-	private GameObject currentConstruction;
-	private Collider currentConstructionCollider;
-	private string currentConstructionTypeId;
-	private bool isConstructionValid = false;
+	private GameObject currentTargetingObject;
+	private OwnedObject currentTargetingReference;
+	private int currentTargetingResourceCost;
+	private Collider currentTargetingCollider;
+	private bool isTargetingValid = false;
 
 	private RTSCamera rtsCamera;
 	private ClientNetworkManager clientNetworkManager;
@@ -75,48 +76,52 @@ public class PlayerInputManager : MonoBehaviour {
 					if (isInBuildMode) {
 						CancelBuildMode();
 					} else {
-						DeselectAll(true);
+						DeselectAll();
 						LastFocusedEntity = null;
 						rtsCamera.ClearFollowTarget();
-						if (currentConstruction != null) {
-							Destroy(currentConstruction);
-						}
 					}
 				} else {
 					if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
-						if (currentConstruction != null) {
-							//when construction exists, some inputs are handled differently
-							if (Input.GetMouseButtonUp(0) && isConstructionValid) {
+						if (currentTargetingObject != null) {
+							//when targeting object exists, some inputs are handled differently
+							if (Input.GetMouseButtonUp(0) && isTargetingValid) {
 								//check resource cost
-								Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
-								if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-									IssueConstructionRequest(currentConstructionTypeId, currentConstruction.transform.position);
+								if (clientGameManager.MyPlayer.Resources >= currentTargetingResourceCost) {
+									if (currentTargetingReference is Structure) {
+										IssueConstructionRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
+									} else {
+										IssuePlayerEventRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
+									}
 								}
-								Destroy(currentConstruction);
+								Destroy(currentTargetingObject);
 								CancelBuildMode();
 							} else if (Input.GetMouseButtonDown(1)) {
-								Destroy(currentConstruction);
+								Destroy(currentTargetingObject);
 							} else {
 								bool isValidPlacement = false;
 
 								Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 								RaycastHit hit;
 								if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayers)) {
-									currentConstruction.transform.position = hit.point;
+									currentTargetingObject.transform.position = hit.point;
 
-									//navmesh check
-									NavMeshHit navHit;
-									if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
-										//collision/overlap check
-										Collider[] colliders = Physics.OverlapBox(currentConstructionCollider.bounds.center,
-											currentConstructionCollider.bounds.extents, currentConstructionCollider.transform.rotation, constructionOverlapLayers);
-										if (colliders.Count(x => x != currentConstructionCollider) == 0) {
-											isValidPlacement = true;
+									if (currentTargetingReference is Structure) {
+										//navmesh check
+										NavMeshHit navHit;
+										if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
+											//collision/overlap check
+											Collider[] colliders = Physics.OverlapBox(currentTargetingCollider.bounds.center,
+												currentTargetingCollider.bounds.extents, currentTargetingCollider.transform.rotation, constructionOverlapLayers);
+											if (colliders.Count(x => x != currentTargetingCollider) == 0) {
+												isValidPlacement = true;
+											}
 										}
+									} else {
+										isValidPlacement = true;
 									}
 								}
 
-								SetConstructionValid(isValidPlacement);
+								SetTargetingValid(isValidPlacement);
 							}
 						} else {
 							//mouse-related inputs
@@ -130,7 +135,7 @@ public class PlayerInputManager : MonoBehaviour {
 								bool isMultiselecting = Input.GetButton("Multiselect");
 
 								if (!isMultiselecting) {
-									DeselectAll();
+									DeselectAll(false);
 								}
 
 								if (isSelecting) {
@@ -203,13 +208,25 @@ public class PlayerInputManager : MonoBehaviour {
 					} else if (isInBuildMode) {
 						foreach (BuildCommand buildCommand in buildCommands) {
 							if (Input.GetKeyDown(buildCommand.key)) {
-								currentConstructionTypeId = buildCommand.structureTypeId;
 								//check resource cost
-								Entity entityRef = clientEntityManager.GetEntityReference(currentConstructionTypeId);
-								if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-									DeselectAll(true);
-									currentConstruction = clientEntityManager.SpawnConstruction(currentConstructionTypeId);
-									currentConstructionCollider = currentConstruction.GetComponentInChildren<Collider>();
+								Entity entityRef = clientEntityManager.GetEntityReference(buildCommand.targetTypeId);
+								if (entityRef != null) {
+									if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
+										DeselectAll();
+										currentTargetingReference = entityRef;
+										currentTargetingResourceCost = (entityRef as Structure).resourceCost;
+										currentTargetingObject = clientEntityManager.SpawnStructureTargeting(currentTargetingReference.typeId);
+										currentTargetingCollider = currentTargetingObject.GetComponentInChildren<Collider>();
+									}
+								} else {
+									PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.targetTypeId);
+									if (playerEventRef != null && clientGameManager.MyPlayer.Resources >= playerEventRef.resourceCost) {
+										DeselectAll();
+										currentTargetingReference = playerEventRef;
+										currentTargetingResourceCost = playerEventRef.resourceCost;
+										currentTargetingObject = clientEntityManager.SpawnPlayerEventTargeting(currentTargetingReference.typeId);
+										currentTargetingCollider = currentTargetingObject.GetComponentInChildren<Collider>();
+									}
 								}
 							}
 						}
@@ -261,17 +278,17 @@ public class PlayerInputManager : MonoBehaviour {
 		}
 	}
 
-	private void SetConstructionValid(bool newIsValid) {
-		if (newIsValid && !isConstructionValid) {
-			isConstructionValid = newIsValid;
-			foreach (Renderer renderer in currentConstruction.GetComponentsInChildren<Renderer>()) {
+	private void SetTargetingValid(bool newIsValid) {
+		if (newIsValid && !isTargetingValid) {
+			isTargetingValid = newIsValid;
+			foreach (Renderer renderer in currentTargetingObject.GetComponentsInChildren<Renderer>()) {
 				Color color = renderer.material.color;
 				color.b = color.g = 1f;
 				renderer.material.color = color;
 			}
-		} else if (!newIsValid && isConstructionValid) {
-			isConstructionValid = newIsValid;
-			foreach (Renderer renderer in currentConstruction.GetComponentsInChildren<Renderer>()) {
+		} else if (!newIsValid && isTargetingValid) {
+			isTargetingValid = newIsValid;
+			foreach (Renderer renderer in currentTargetingObject.GetComponentsInChildren<Renderer>()) {
 				Color color = renderer.material.color;
 				color.b = color.g = 0f;
 				renderer.material.color = color;
@@ -304,7 +321,7 @@ public class PlayerInputManager : MonoBehaviour {
 		}
 	}
 
-	private void DeselectAll(bool alsoStopSelecting=false) {
+	private void DeselectAll(bool alsoStopSelecting=true) {
 		foreach (Entity entity in SelectedEntities) {
 			if (entity != null) {
 				DeselectEntity(entity, false);
@@ -313,6 +330,10 @@ public class PlayerInputManager : MonoBehaviour {
 		SelectedEntities.Clear();
 		if (alsoStopSelecting) {
 			isSelecting = false;
+		}
+
+		if (currentTargetingObject != null) {
+			Destroy(currentTargetingObject);
 		}
 
 		uiManager.UpdateSelectedEntities(SelectedEntities);
@@ -327,7 +348,7 @@ public class PlayerInputManager : MonoBehaviour {
 
 	private void IssueMoveCommand(List<string> entityIds, Vector3 target) {
 		if (entityIds.Count > 0) {
-			Command moveCommand = new Command(CommandType.MOVE, entityIds);
+			EntityCommand moveCommand = new EntityCommand(CommandType.MOVE, entityIds);
 			moveCommand.Point = target;
 			clientNetworkManager.SendCommand(moveCommand);
 		}
@@ -335,14 +356,14 @@ public class PlayerInputManager : MonoBehaviour {
 
 	private void IssueStopCommand(List<string> entityIds) {
 		if (entityIds.Count > 0) {
-			Command stopCommand = new Command(CommandType.STOP, entityIds);
+			EntityCommand stopCommand = new EntityCommand(CommandType.STOP, entityIds);
 			clientNetworkManager.SendCommand(stopCommand);
 		}
 	}
 
 	private void IssueAttackCommand(List<string> entityIds, string targetEntityId) {
 		if (entityIds.Count > 0) {
-			Command attackCommand = new Command(CommandType.ATTACK, entityIds);
+			EntityCommand attackCommand = new EntityCommand(CommandType.ATTACK, entityIds);
 			attackCommand.TargetEntityId = targetEntityId;
 			clientNetworkManager.SendCommand(attackCommand);
 		}
@@ -350,13 +371,17 @@ public class PlayerInputManager : MonoBehaviour {
 
 	private void IssueAbilityCommand(List<string> entityIds, CommandType commandType) {
 		if (entityIds.Count > 0) {
-			Command abilityCommand = new Command(commandType, entityIds);
+			EntityCommand abilityCommand = new EntityCommand(commandType, entityIds);
 			clientNetworkManager.SendCommand(abilityCommand);
 		}
 	}
 
 	private void IssueConstructionRequest(string structureTypeId, Vector3 position) {
 		clientNetworkManager.SendConstruction(structureTypeId, position);
+	}
+
+	private void IssuePlayerEventRequest(string playerEventTypeId, Vector3 position) {
+		clientNetworkManager.SendPlayerEvent(playerEventTypeId, position);
 	}
 
 	// Start box selection functions

@@ -50,7 +50,7 @@ public class InfoWindowController : MonoBehaviour {
 
 		buildMenuText.text = "";
 		foreach (BuildCommand buildCommand in buildCommands) {
-			buildMenuText.text += buildCommand.key + " - " + buildCommand.structureTypeId;
+			buildMenuText.text += buildCommand.key + " - " + buildCommand.targetTypeId + "\n";
 		}
 	}
 

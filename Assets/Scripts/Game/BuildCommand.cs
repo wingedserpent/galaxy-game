@@ -8,5 +8,5 @@ using UnityEngine;
 public class BuildCommand {
 
 	public KeyCode key;
-	public string structureTypeId;
+	public string targetTypeId;
 }

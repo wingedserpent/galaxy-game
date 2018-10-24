@@ -8,8 +8,10 @@ public class EntityDatabase : ScriptableObject {
 	
 	public List<Unit> units;
 	public List<Structure> structures;
+	public List<PlayerEvent> playerEvents;
 
 	private Dictionary<string, Entity> entityMap;
+	private Dictionary<string, PlayerEvent> playerEventMap;
 
 	public Entity GetEntityReference(string typeId) {
 		if (entityMap == null) {
@@ -27,7 +29,10 @@ public class EntityDatabase : ScriptableObject {
 				entityMap.Add(entity.typeId, entity);
 			}
 		}
-		return entityMap[typeId];
+		if (entityMap.ContainsKey(typeId)) {
+			return entityMap[typeId];
+		}
+		return null;
 	}
 
 	public Entity GetEntityInstance(string typeId, Transform parent = null) {
@@ -42,8 +47,29 @@ public class EntityDatabase : ScriptableObject {
 		return Instantiate<GameObject>(GetEntityReference(typeId).gameObject, position, rotation, parent).GetComponent<Entity>();
 	}
 
-	public GameObject GetConstruction(string structureTypeId, Transform parent = null) {
+	public GameObject GetStructureTargeting(string structureTypeId, Transform parent = null) {
 		Structure structure = GetEntityReference(structureTypeId) as Structure;
 		return Instantiate<GameObject>(structure.constructionPrefab, parent);
+	}
+
+	public PlayerEvent GetPlayerEventReference(string typeId) {
+		if (playerEventMap == null) {
+			playerEventMap = new Dictionary<string, PlayerEvent>();
+			foreach (PlayerEvent playerEvent in playerEvents) {
+				if (playerEventMap.ContainsKey(playerEvent.typeId)) {
+					throw new System.Exception("Multiple player events have the same ID: " + playerEvent.typeId);
+				}
+				playerEventMap.Add(playerEvent.typeId, playerEvent);
+			}
+		}
+		if (playerEventMap.ContainsKey(typeId)) {
+			return playerEventMap[typeId];
+		}
+		return null;
+	}
+
+	public GameObject GetPlayerEventTargeting(string playerEventTypeId, Transform parent = null) {
+		PlayerEvent playerEvent = GetPlayerEventReference(playerEventTypeId);
+		return Instantiate<GameObject>(playerEvent.targetingPrefab, parent);
 	}
 }

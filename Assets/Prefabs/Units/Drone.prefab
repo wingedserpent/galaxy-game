@@ -907,9 +907,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: drone
+  displayName: Drone
   isInAir: 1
   canAttackGround: 0
   canAttackAir: 1
+  shieldRechargeCooldown: 5
 --- !u!114 &114524392902342580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -950,6 +952,7 @@ MonoBehaviour:
     type: 2}
   weaponEffects:
   - weaponType: ballistic
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 1014393418040362, guid: 5d0ce835c44b382458c8fe98cb48967c,
       type: 2}
     projectileSpawnPoints:

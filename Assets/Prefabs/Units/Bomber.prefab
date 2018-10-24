@@ -852,6 +852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: bomber
+  displayName: Bomber
   isInAir: 1
   canAttackGround: 1
   canAttackAir: 0
@@ -893,6 +894,7 @@ MonoBehaviour:
     type: 2}
   weaponEffects:
   - weaponType: bomb
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 0}
     projectileSpawnPoints: []
     existingProjectiles:

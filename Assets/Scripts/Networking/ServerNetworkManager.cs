@@ -73,9 +73,13 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 				if (ServerGameManager.Instance.GameState.CurrentState == GameStates.GAME_IN_PROGRESS) {
 					//game is in progress
 					if (message.Tag == NetworkTags.Command) {
-						ServerEntityManager.Instance.HandleCommand(reader.ReadSerializable<Command>(), InGameClientAccountMap[e.Client].PlayFabId);
+						ServerEntityManager.Instance.HandleCommand(reader.ReadSerializable<EntityCommand>(), InGameClientAccountMap[e.Client].PlayFabId);
 					} else if (message.Tag == NetworkTags.Construction) {
 						ServerEntityManager.Instance.SpawnStructure(ServerGameManager.Instance.GameState.GetPlayer(InGameClientAccountMap[e.Client].PlayFabId),
+							reader.ReadString(),
+							new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+					} else if (message.Tag == NetworkTags.PlayerEvent) {
+						ServerEntityManager.Instance.SpawnPlayerEvent(ServerGameManager.Instance.GameState.GetPlayer(InGameClientAccountMap[e.Client].PlayFabId),
 							reader.ReadString(),
 							new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 					} else if (message.Tag == NetworkTags.ChatMessage) {
@@ -276,11 +280,39 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 		}
 	}
 
+	public void BroadcastPlayerEvents(List<PlayerEvent> playerEvents) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			foreach (PlayerEvent playerEvent in playerEvents) {
+				writer.Write(playerEvent.ID);
+				writer.Write(playerEvent.typeId);
+				writer.Write(playerEvent);
+			}
+
+			using (Message message = Message.Create(NetworkTags.PlayerEventUpdate, writer)) {
+				foreach (IClient client in InGameClientAccountMap.Keys) {
+					client.SendMessage(message, SendMode.Unreliable);
+				}
+			}
+		}
+	}
+
 	public void SendEntityDeath(Entity entity) {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 			writer.Write(entity.ID);
 
 			using (Message message = Message.Create(NetworkTags.EntityDeath, writer)) {
+				foreach (IClient client in InGameClientAccountMap.Keys) {
+					client.SendMessage(message, SendMode.Unreliable);
+				}
+			}
+		}
+	}
+
+	public void SendPlayerEventEnd(PlayerEvent playerEvent) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			writer.Write(playerEvent.ID);
+
+			using (Message message = Message.Create(NetworkTags.PlayerEventEnd, writer)) {
 				foreach (IClient client in InGameClientAccountMap.Keys) {
 					client.SendMessage(message, SendMode.Unreliable);
 				}

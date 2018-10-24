@@ -3,9 +3,8 @@ using UnityEngine;
 using DarkRift;
 using System.Collections.Generic;
 
-public class Entity : MonoBehaviour, IDarkRiftSerializable {
+public class Entity : OwnedObject {
 
-	public string typeId;
 	public bool isInAir;
 	public bool canAttackGround;
 	public bool canAttackAir;
@@ -13,10 +12,7 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 
 	public virtual bool CanMove { get { return false; } }
 	public virtual bool CanAttack { get { return false; } }
-
-	public string ID { get; set; }
-	public string PlayerId { get; set; }
-	public ushort TeamId { get; set; }
+	
 	public Weapon Weapon { get; set; }
 	public List<Equipment> Equipment { get; set; }
 	public int MaxHealth { get; set; }
@@ -39,14 +35,12 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	private void Awake() {
+	protected override void Awake() {
+		base.Awake();
+
 		EntityController = GetComponent<EntityController>();
 
 		Equipment = new List<Equipment>();
-		
-		ID = Guid.NewGuid().ToString();
-		PlayerId = "ZZZZ";
-		TeamId = 999;
 	}
 
 	private void Update() {
@@ -57,11 +51,6 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 				shieldRechargeTimer = 1f;
 			}
 		}
-	}
-
-	public void SetPlayer(Player player) {
-		PlayerId = player.ID;
-		TeamId = player.TeamId;
 	}
 
 	public int AdjustHealth(int adjustment) {
@@ -86,15 +75,13 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 			ShieldRechargeRate += equipment.ShieldRechargeRate;
 			MoveSpeed += equipment.MoveSpeed;
 			VisionRange += equipment.VisionRange;
-			//TODO apply move speed, vision range, abilities
+			//TODO apply abilities
 		}
 	}
 
-	public virtual void Deserialize(DeserializeEvent e) {
-		typeId = e.Reader.ReadString();
-		ID = e.Reader.ReadString();
-		PlayerId = e.Reader.ReadString();
-		TeamId = e.Reader.ReadUInt16();
+	public override void Deserialize(DeserializeEvent e) {
+		base.Deserialize(e);
+		
 		MaxHealth = e.Reader.ReadInt32();
 		CurrentHealth = e.Reader.ReadInt32();
 		MaxShield = e.Reader.ReadInt32();
@@ -102,8 +89,6 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		ShieldRechargeRate = e.Reader.ReadInt32();
 		MoveSpeed = e.Reader.ReadSingle();
 		VisionRange = e.Reader.ReadSingle();
-		transform.position = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
-		transform.rotation = new Quaternion(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		
 		if (e.Reader.ReadBoolean()) {
 			Weapon = e.Reader.ReadSerializable<Weapon>();
@@ -118,11 +103,9 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	public virtual void Serialize(SerializeEvent e) {
-		e.Writer.Write(typeId);
-		e.Writer.Write(ID);
-		e.Writer.Write(PlayerId);
-		e.Writer.Write(TeamId);
+	public override void Serialize(SerializeEvent e) {
+		base.Serialize(e);
+		
 		e.Writer.Write(MaxHealth);
 		e.Writer.Write(CurrentHealth);
 		e.Writer.Write(MaxShield);
@@ -130,8 +113,6 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		e.Writer.Write(ShieldRechargeRate);
 		e.Writer.Write(MoveSpeed);
 		e.Writer.Write(VisionRange);
-		e.Writer.Write(transform.position.x); e.Writer.Write(transform.position.y); e.Writer.Write(transform.position.z);
-		e.Writer.Write(transform.rotation.x); e.Writer.Write(transform.rotation.y); e.Writer.Write(transform.rotation.z); e.Writer.Write(transform.rotation.w);
 
 		//TODO determine how to write certain things only on first write to client
 		e.Writer.Write(Weapon != null);
@@ -147,19 +128,5 @@ public class Entity : MonoBehaviour, IDarkRiftSerializable {
 		if (EntityController != null) {
 			e.Writer.Write(EntityController);
 		}
-	}
-
-	public override bool Equals(object obj) {
-		var entity = obj as Entity;
-		return entity != null &&
-			   base.Equals(obj) &&
-			   ID == entity.ID;
-	}
-
-	public override int GetHashCode() {
-		var hashCode = -160907283;
-		hashCode = hashCode * -1521134295 + base.GetHashCode();
-		hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ID);
-		return hashCode;
 	}
 }

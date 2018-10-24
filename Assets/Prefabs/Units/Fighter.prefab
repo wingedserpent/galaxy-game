@@ -843,6 +843,7 @@ MonoBehaviour:
     type: 2}
   weaponEffects:
   - weaponType: missile
+    isContinuousEffect: 0
     projectilePrefab: {fileID: 1231709648642028, guid: e6929d500b1c58543b6a3b20e7308664,
       type: 2}
     projectileSpawnPoints:
@@ -863,9 +864,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeId: fighter
+  displayName: Fighter
   isInAir: 1
   canAttackGround: 0
   canAttackAir: 1
+  shieldRechargeCooldown: 5
 --- !u!114 &114588846355388864
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -14,7 +14,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 	private Dictionary<string, List<PlayerUnit>> playerUnits = new Dictionary<string, List<PlayerUnit>>();
 	private Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
-	
+	private Dictionary<string, PlayerEvent> playerEvents = new Dictionary<string, PlayerEvent>();
+
 	private ServerNetworkManager serverNetworkManager;
 	private ServerGameManager serverGameManager;
 
@@ -23,7 +24,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		serverGameManager = ServerGameManager.Instance;
 
 		EntityController.OnDeath += HandleEntityDeath;
-		
+		PlayerEvent.OnEventEnd += HandlePlayerEventEnd;
+
 		//register any entities already existing in the scene (for dev/testing convenience)
 		foreach (Entity entity in FindObjectsOfType<Entity>()) {
 			RegisterEntity(entity);
@@ -32,6 +34,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 	void Update() {
 		serverNetworkManager.BroadcastEntities(entities.Values.ToList());
+		serverNetworkManager.BroadcastPlayerEvents(playerEvents.Values.ToList());
 	}
 
 	public List<PlayerUnit> GetUsablePlayerUnits(string playerId) {
@@ -91,7 +94,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 			//navmesh check
 			NavMeshHit navHit;
 			if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
-				GameObject construction = entityDatabase.GetConstruction(structureTypeId);
+				GameObject construction = entityDatabase.GetStructureTargeting(structureTypeId);
 				construction.transform.position = spawnPos;
 				Collider constructionCollider = construction.GetComponentInChildren<Collider>();
 
@@ -116,13 +119,34 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		}
 	}
 
+	public void SpawnPlayerEvent(Player player, string playerEventTypeId, Vector3 spawnPos) {
+		PlayerEvent playerEventRef = entityDatabase.GetPlayerEventReference(playerEventTypeId);
+		if (player.Resources >= playerEventRef.resourceCost) {
+			PlayerEvent newPlayerEvent = Instantiate(playerEventRef.gameObject, spawnPos, Quaternion.identity).GetComponent<PlayerEvent>();
+			newPlayerEvent.SetPlayer(player);
+			RegisterPlayerEvent(newPlayerEvent);
+
+			serverGameManager.DecreaseResources(player, playerEventRef.resourceCost);
+		}
+	}
+
 	public void RegisterEntity(Entity entity) {
 		if (!entities.ContainsKey(entity.ID)) {
-			ScrubEntity(entity);
+			ScrubOwnedObject(entity);
 			entities.Add(entity.ID, entity);
 		} else {
 			Debug.LogWarning("An entity with ID: " + entity.ID + " already exists! Destroying new entity.");
 			Destroy(entity.gameObject);
+		}
+	}
+
+	public void RegisterPlayerEvent(PlayerEvent playerEvent) {
+		if (!playerEvents.ContainsKey(playerEvent.ID)) {
+			ScrubOwnedObject(playerEvent);
+			playerEvents.Add(playerEvent.ID, playerEvent);
+		} else {
+			Debug.LogWarning("A player event with ID: " + playerEvent.ID + " already exists! Destroying new player event.");
+			Destroy(playerEvent.gameObject);
 		}
 	}
 
@@ -133,31 +157,38 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		}
 	}
 
-	private void ScrubEntity(Entity entity) {
+	public void DestroyPlayerEvent(string playerEventId) {
+		if (playerEvents.ContainsKey(playerEventId)) {
+			Destroy(playerEvents[playerEventId].gameObject);
+			playerEvents.Remove(playerEventId);
+		}
+	}
+
+	private void ScrubOwnedObject(OwnedObject ownedObject) {
 		//remove any children that don't need to exist on the server
-		foreach (Transform child in entity.transform) {
+		foreach (Transform child in ownedObject.transform) {
 			if (child.CompareTag(CLIENT_ANY_TAG) || child.CompareTag(CLIENT_SELF_TAG)) {
 				Destroy(child.gameObject);
 			}
 		}
 
 		//destroy any remaining visibility togglers
-		foreach (VisibilityToggle visibilityToggle in entity.GetComponentsInChildren<VisibilityToggle>()) {
+		foreach (VisibilityToggle visibilityToggle in ownedObject.GetComponentsInChildren<VisibilityToggle>()) {
 			Destroy(visibilityToggle);
 		}
 
 		//destroy any remaining animators
-		foreach (Animator animator in entity.GetComponentsInChildren<Animator>()) {
+		foreach (Animator animator in ownedObject.GetComponentsInChildren<Animator>()) {
 			Destroy(animator);
 		}
 
 		//destroy any remaining audio sources
-		foreach (AudioSource audioSource in entity.GetComponents<AudioSource>()) {
+		foreach (AudioSource audioSource in ownedObject.GetComponents<AudioSource>()) {
 			Destroy(audioSource);
 		}
 	}
 
-	public void HandleCommand(Command command, string sourcePlayerId) {
+	public void HandleCommand(EntityCommand command, string sourcePlayerId) {
 		List<Entity> actingEntities = new List<Entity>();
 		foreach (string entityId in command.ActingEntityIds) {
 			if (entities.ContainsKey(entityId)) {
@@ -210,6 +241,14 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		serverNetworkManager.SendEntityDeath(entity);
 
 		DestroyEntity(entity.ID);
+	}
+
+	public void HandlePlayerEventEnd(PlayerEvent playerEvent) {
+		playerEvent.End();
+
+		serverNetworkManager.SendPlayerEventEnd(playerEvent);
+
+		DestroyPlayerEvent(playerEvent.ID);
 	}
 
 	private bool CheckGameEnd(Entity lastDeadEntity) {

@@ -18,3 +18,5 @@ MonoBehaviour:
   - {fileID: 114543035274241992, guid: 9f2f8e6b9cec46e438215366d72b5b83, type: 2}
   structures:
   - {fileID: 114702009273401912, guid: 2247792e9ebf23a4c8562e58348a6b63, type: 2}
+  playerEvents:
+  - {fileID: 114877443983418512, guid: 7e9d238c56710db40ae251f233794d9b, type: 2}
