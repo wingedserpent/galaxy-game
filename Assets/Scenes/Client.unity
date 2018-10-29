@@ -2903,7 +2903,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 15927
+    m_Bits: 48695
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -2945,9 +2945,6 @@ MonoBehaviour:
   leftLine: {fileID: 1026296230}
   rightLine: {fileID: 2007230928}
   lineWidth: 1
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 2064
 --- !u!82 &1201808662
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2957,11 +2954,11 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 816b6eab58d24c646a55f35fb63b0f1f, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 0.5
+  m_audioClip: {fileID: 8300000, guid: 9113a8a90b5a5ca42a7d9af05d6cf620, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.25
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -3070,9 +3067,6 @@ MonoBehaviour:
   panningSpeed: 20
   mouseRotationSpeed: 40
   autoHeight: 1
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 2064
   minHeight: 40
   maxHeight: 60
   minZoom: 40
@@ -3395,48 +3389,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1330000157}
   m_CullTransparentMesh: 0
---- !u!1001 &1362757105
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4122599868122286, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-      propertyPath: m_RootOrder
-      value: 9
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 83fb725ef88e6a3408f0e85841693e0b, type: 2}
-  m_IsPrefabAsset: 0
 --- !u!1 &1390355388
 GameObject:
   m_ObjectHideFlags: 0
@@ -3859,6 +3811,7 @@ GameObject:
   - component: {fileID: 1591621535}
   - component: {fileID: 1591621534}
   - component: {fileID: 1591621533}
+  - component: {fileID: 1591621536}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -3900,15 +3853,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectionBoxInnerColor: {r: 1, g: 1, b: 1, a: 0.09803922}
   selectionBoxBorderColor: {r: 1, g: 1, b: 1, a: 1}
-  clickableLayers:
-    serializedVersion: 2
-    m_Bits: 14352
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 2048
-  constructionOverlapLayers:
-    serializedVersion: 2
-    m_Bits: 10257
   buildCommands:
   - key: 116
     targetTypeId: turret
@@ -3939,12 +3883,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   persistent: 0
-  visionMask:
-    serializedVersion: 2
-    m_Bits: 1024
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 18944
 --- !u!114 &1591621534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3970,6 +3908,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   persistent: 0
+--- !u!114 &1591621536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1591621529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37a246a051289394ab111fd787e686e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  persistent: 0
+  unitMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  damageableMask:
+    serializedVersion: 2
+    m_Bits: 12288
+  clickableMask:
+    serializedVersion: 2
+    m_Bits: 14352
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  constructionOverlapMask:
+    serializedVersion: 2
+    m_Bits: 43024
+  visionTargetMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  visionBlockerMask:
+    serializedVersion: 2
+    m_Bits: 2560
 --- !u!1 &1593607352
 GameObject:
   m_ObjectHideFlags: 0

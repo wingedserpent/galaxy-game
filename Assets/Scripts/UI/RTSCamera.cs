@@ -43,7 +43,6 @@ namespace RTSCam
         #region Height
 
         public bool autoHeight = true;
-        public LayerMask groundMask = -1; //layermask of ground or other objects that affect height
 
         public float minHeight = 10f; //minimum height
         public float maxHeight = 15f; //maximum height
@@ -388,7 +387,7 @@ namespace RTSCam
         {
             Ray ray = new Ray(m_Transform.position, Vector3.down);
             RaycastHit hit;
-			if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundMask.value))
+			if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.groundMask))
                 return (hit.point - m_Transform.position).magnitude;
 
             return 0f;
@@ -405,7 +404,7 @@ namespace RTSCam
 		private Vector3 GetForwardGroundPos() {
 			Ray forwardRay = new Ray(m_Transform.position, m_Transform.forward);
 			RaycastHit hit;
-			if (Physics.Raycast(forwardRay, out hit, Mathf.Infinity, groundMask.value)) {
+			if (Physics.Raycast(forwardRay, out hit, Mathf.Infinity, LayerManager.Instance.groundMask)) {
 				return hit.point;
 			}
 

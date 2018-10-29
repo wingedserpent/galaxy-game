@@ -10,9 +10,6 @@ public class PlayerInputManager : MonoBehaviour {
 
 	public Color selectionBoxInnerColor;
 	public Color selectionBoxBorderColor;
-	public LayerMask clickableLayers;
-	public LayerMask groundLayers;
-	public LayerMask constructionOverlapLayers;
 	public List<BuildCommand> buildCommands;
 
 	private List<Entity> SelectedEntities { get; set; }
@@ -102,7 +99,7 @@ public class PlayerInputManager : MonoBehaviour {
 
 								Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 								RaycastHit hit;
-								if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayers)) {
+								if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.groundMask)) {
 									currentTargetingObject.transform.position = hit.point;
 
 									if (currentTargetingReference is Structure) {
@@ -111,7 +108,7 @@ public class PlayerInputManager : MonoBehaviour {
 										if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
 											//collision/overlap check
 											Collider[] colliders = Physics.OverlapBox(currentTargetingCollider.bounds.center,
-												currentTargetingCollider.bounds.extents, currentTargetingCollider.transform.rotation, constructionOverlapLayers);
+												currentTargetingCollider.bounds.extents, currentTargetingCollider.transform.rotation, LayerManager.Instance.constructionOverlapMask);
 											if (colliders.Count(x => x != currentTargetingCollider) == 0) {
 												isValidPlacement = true;
 											}
@@ -162,7 +159,7 @@ public class PlayerInputManager : MonoBehaviour {
 										//selection box is too small, do point selection
 										Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 										RaycastHit hit;
-										if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
+										if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
 											Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
 											if (hitEntity != null && hitEntity.PlayerId == clientGameManager.MyPlayer.ID) {
 												if (!SelectedEntities.Contains(hitEntity)) {
@@ -185,7 +182,7 @@ public class PlayerInputManager : MonoBehaviour {
 									Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 									RaycastHit hit;
 
-									if (Physics.Raycast(ray, out hit, Mathf.Infinity, clickableLayers)) {
+									if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
 										Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
 										if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
 											IssueAttackCommand(SelectedEntities

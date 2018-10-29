@@ -40,8 +40,8 @@ public class Vision : MonoBehaviour
 		selfEntity = GetComponentInParent<Entity>();
 		myVisionCollider = GetComponentsInChildren<Collider>().Where(x => visionMask == (visionMask | (1 << x.gameObject.layer))).FirstOrDefault();
 
-		visionMask = visibilityManager.visionMask;
-		obstacleMask = visibilityManager.obstacleMask;
+		visionMask = LayerManager.Instance.visionTargetMask;
+		obstacleMask = LayerManager.Instance.visionBlockerMask;
 
 		isClient = NetworkStatus.Instance.IsClient;
 
@@ -93,7 +93,7 @@ public class Vision : MonoBehaviour
 			}
         }
 
-		if (isClient) {
+		if (isClient && VisibleTargets.Count > 0) {
 			visibilityManager.AddVisibleTargets(VisibleTargets);
 		}
 	}

@@ -8,9 +8,6 @@ public delegate void VisibilityTargetDispatch(ICollection<Entity> newTargets);
 
 public class VisibilityManager : Singleton<VisibilityManager> {
 
-	public LayerMask visionMask;
-	public LayerMask obstacleMask;
-
 	private HashSet<Entity> allVisibleTargets = new HashSet<Entity>();
 
 	public static event VisibilityTargetDispatch VisibilityTargetDispatch = delegate { };

@@ -9,7 +9,6 @@ public class CamMinimapOutline : MonoBehaviour {
 	public Transform leftLine;
 	public Transform rightLine;
 	public float lineWidth = 1f;
-	public LayerMask groundMask = -1; //same mask as RTSCamera, move into something shared
 	
 	private Camera cam;
 	private Quaternion leftLineRotOffset;

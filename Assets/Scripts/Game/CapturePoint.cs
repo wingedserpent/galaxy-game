@@ -11,7 +11,6 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 	public GainType gainType;
 	public int gainAmount;
 	public float gainFrequency;
-	public LayerMask unitLayers;
 	public Colorable colorable;
 
 	public CaptureState CaptureState { get; set; }
@@ -60,7 +59,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 
 	private void CheckUnitsInside() {
 		ushort? teamIdInside = null;
-		foreach (Collider collider in Physics.OverlapSphere(transform.position, captureRadius, unitLayers.value)) {
+		foreach (Collider collider in Physics.OverlapSphere(transform.position, captureRadius, LayerManager.Instance.unitMask)) {
 			Entity entity = collider.GetComponentInParent<Entity>();
 			if (entity != null) {
 				if (teamIdInside == null) {

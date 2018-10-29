@@ -10,7 +10,6 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	private static readonly string CLIENT_SELF_TAG = "ClientSelf";
 
 	public EntityDatabase entityDatabase;
-	public LayerMask constructionOverlapLayers;
 
 	private Dictionary<string, List<PlayerUnit>> playerUnits = new Dictionary<string, List<PlayerUnit>>();
 	private Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
@@ -100,7 +99,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 				//collision/overlap check
 				Collider[] colliders = Physics.OverlapBox(constructionCollider.bounds.center,
-					constructionCollider.bounds.extents, constructionCollider.transform.rotation, constructionOverlapLayers);
+					constructionCollider.bounds.extents, constructionCollider.transform.rotation, LayerManager.Instance.constructionOverlapMask);
 				if (colliders.Count(x => x != constructionCollider) == 0) {
 					Structure newStructure = (Structure)entityDatabase.GetEntityInstance(structureTypeId, spawnPos, Quaternion.identity);
 					newStructure.SetPlayer(player);

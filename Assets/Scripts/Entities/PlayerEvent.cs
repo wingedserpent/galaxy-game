@@ -43,20 +43,4 @@ public class PlayerEvent : OwnedObject {
 
 		Destroy(gameObject, maxLifetime);
 	}
-
-	public override void Deserialize(DeserializeEvent e) {
-		base.Deserialize(e);
-
-		resourceCost = e.Reader.ReadInt32();
-		radius = e.Reader.ReadSingle();
-		duration = e.Reader.ReadSingle();
-	}
-
-	public override void Serialize(SerializeEvent e) {
-		base.Serialize(e);
-
-		e.Writer.Write(resourceCost);
-		e.Writer.Write(radius);
-		e.Writer.Write(duration);
-	}
 }

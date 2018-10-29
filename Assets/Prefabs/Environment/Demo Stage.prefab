@@ -105,7 +105,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4952204515927894}
   - component: {fileID: 114170135355334042}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Team 2 Spawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -229,7 +229,7 @@ GameObject:
   - component: {fileID: 4466979019880744}
   - component: {fileID: 33847749812506024}
   - component: {fileID: 23018418412800890}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Field
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -329,7 +329,7 @@ GameObject:
   - component: {fileID: 4664509436530212}
   - component: {fileID: 33519799555071390}
   - component: {fileID: 23601277187268510}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Field
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -419,7 +419,7 @@ GameObject:
   - component: {fileID: 33026308584365980}
   - component: {fileID: 23180725712010232}
   - component: {fileID: 64794511967299928}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Team 1 Gate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -596,7 +596,7 @@ GameObject:
   - component: {fileID: 33779849934188812}
   - component: {fileID: 23908018726515876}
   - component: {fileID: 64772048392288964}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Team 2 Gate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -681,7 +681,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4459203389177646}
   - component: {fileID: 114925394398635166}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Team 1 Spawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -44,10 +44,10 @@ public class OwnedObject : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public override bool Equals(object obj) {
-		var playerEvent = obj as PlayerEvent;
-		return playerEvent != null &&
+		var ownedObject = obj as OwnedObject;
+		return ownedObject != null &&
 			   base.Equals(obj) &&
-			   ID == playerEvent.ID;
+			   ID == ownedObject.ID;
 	}
 
 	public override int GetHashCode() {

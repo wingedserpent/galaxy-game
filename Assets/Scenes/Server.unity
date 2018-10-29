@@ -143,7 +143,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ef8c68bade09b41aca258d42a632f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastTab: 2
+  lastTab: 0
   movementSettingsFoldout: 0
   zoomingSettingsFoldout: 0
   rotationSettingsFoldout: 0
@@ -159,9 +159,6 @@ MonoBehaviour:
   panningSpeed: 20
   mouseRotationSpeed: 40
   autoHeight: 1
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 2064
   minHeight: 40
   maxHeight: 60
   minZoom: 40
@@ -233,7 +230,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967039
+    m_Bits: 48695
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -335,6 +332,7 @@ GameObject:
   - component: {fileID: 817773707}
   - component: {fileID: 817773703}
   - component: {fileID: 817773708}
+  - component: {fileID: 817773704}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -368,9 +366,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   persistent: 0
   entityDatabase: {fileID: 11400000, guid: be039e5ff7481ee4a94a7719e632759e, type: 2}
-  constructionOverlapLayers:
+--- !u!114 &817773704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 817773701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37a246a051289394ab111fd787e686e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  persistent: 0
+  unitMask:
     serializedVersion: 2
-    m_Bits: 10257
+    m_Bits: 4096
+  damageableMask:
+    serializedVersion: 2
+    m_Bits: 12288
+  clickableMask:
+    serializedVersion: 2
+    m_Bits: 14352
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  constructionOverlapMask:
+    serializedVersion: 2
+    m_Bits: 43024
+  visionTargetMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  visionBlockerMask:
+    serializedVersion: 2
+    m_Bits: 2560
 --- !u!114 &817773707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -397,12 +425,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   persistent: 0
-  visionMask:
-    serializedVersion: 2
-    m_Bits: 1024
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 2560
 --- !u!1 &1088718878
 GameObject:
   m_ObjectHideFlags: 0

@@ -225,7 +225,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			}
 
 			if (entity.Weapon.SplashRadius > 0f) {
-				Collider[] overlaps = Physics.OverlapSphere(attackTarget.transform.position, entity.Weapon.SplashRadius, LayerMask.GetMask("Unit"));
+				Collider[] overlaps = Physics.OverlapSphere(attackTarget.transform.position, entity.Weapon.SplashRadius, LayerManager.Instance.damageableMask);
 				IEnumerable<Entity> damagedTargets = (from target in overlaps.Select(x => x.GetComponentInParent<Entity>())
 													  where target != attackTarget && CanSplashAttackTarget(target, attackTarget)
 													  select target);
