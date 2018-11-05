@@ -155,7 +155,6 @@ GameObject:
   - component: {fileID: 4815320621025558}
   - component: {fileID: 33955265107005080}
   - component: {fileID: 23132134140087692}
-  - component: {fileID: 114342685454170072}
   - component: {fileID: 114584246114313826}
   m_Layer: 0
   m_Name: Selection Marker
@@ -210,7 +209,6 @@ GameObject:
   - component: {fileID: 4792806926890490}
   - component: {fileID: 33140814293663024}
   - component: {fileID: 23398775500165844}
-  - component: {fileID: 114587455454078154}
   - component: {fileID: 114242935500481094}
   m_Layer: 0
   m_Name: Selection Marker
@@ -362,7 +360,6 @@ GameObject:
   - component: {fileID: 4040492148003616}
   - component: {fileID: 33465478673674988}
   - component: {fileID: 23147776816055260}
-  - component: {fileID: 114356547367494406}
   - component: {fileID: 114865105578247982}
   m_Layer: 0
   m_Name: Selection Marker
@@ -381,7 +378,6 @@ GameObject:
   - component: {fileID: 4183861385256918}
   - component: {fileID: 33183017526337564}
   - component: {fileID: 23010102163823252}
-  - component: {fileID: 114233092045210558}
   - component: {fileID: 114225653643251762}
   m_Layer: 0
   m_Name: Selection Marker
@@ -436,7 +432,6 @@ GameObject:
   - component: {fileID: 4732038555598204}
   - component: {fileID: 33213459628265684}
   - component: {fileID: 23951502442179910}
-  - component: {fileID: 114105863843137288}
   - component: {fileID: 114348072286191216}
   m_Layer: 0
   m_Name: Selection Marker
@@ -576,7 +571,6 @@ GameObject:
   - component: {fileID: 4956538792794162}
   - component: {fileID: 33695929025330830}
   - component: {fileID: 23375010015926856}
-  - component: {fileID: 114279333431132276}
   - component: {fileID: 114237029591465634}
   m_Layer: 0
   m_Name: Selection Marker
@@ -613,7 +607,6 @@ GameObject:
   - component: {fileID: 4141131130489078}
   - component: {fileID: 33741053479416704}
   - component: {fileID: 23680418872916520}
-  - component: {fileID: 114010047230524080}
   - component: {fileID: 114334310524791728}
   m_Layer: 0
   m_Name: Selection Marker
@@ -2908,17 +2901,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114010047230524080
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1780883986998402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114063293392935580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2936,21 +2918,7 @@ MonoBehaviour:
   gainType: 1
   gainAmount: 15
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114348072286191216}
---- !u!114 &114105863843137288
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1505864483966860}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114170135355334042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2977,17 +2945,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recursive: 0
---- !u!114 &114233092045210558
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464839848454540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114237029591465634
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3012,17 +2969,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recursive: 0
---- !u!114 &114279333431132276
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1739178231375396}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114315032889750000
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3040,9 +2986,6 @@ MonoBehaviour:
   gainType: 0
   gainAmount: 5
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114334310524791728}
 --- !u!114 &114334310524791728
 MonoBehaviour:
@@ -3056,17 +2999,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recursive: 0
---- !u!114 &114342685454170072
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1222436522612950}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114348072286191216
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3079,17 +3011,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recursive: 0
---- !u!114 &114356547367494406
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1428562847728186}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114394100878636124
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3107,9 +3028,6 @@ MonoBehaviour:
   gainType: 1
   gainAmount: 15
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114237029591465634}
 --- !u!114 &114539820853407882
 MonoBehaviour:
@@ -3128,9 +3046,6 @@ MonoBehaviour:
   gainType: 0
   gainAmount: 5
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114865105578247982}
 --- !u!114 &114584246114313826
 MonoBehaviour:
@@ -3144,17 +3059,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recursive: 0
---- !u!114 &114587455454078154
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1283177871293640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c7eda8a7faf49f4582061448527d83e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114615086086051914
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3172,9 +3076,6 @@ MonoBehaviour:
   gainType: 0
   gainAmount: 5
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114242935500481094}
 --- !u!114 &114621976961804426
 MonoBehaviour:
@@ -3193,9 +3094,6 @@ MonoBehaviour:
   gainType: 1
   gainAmount: 15
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114584246114313826}
 --- !u!114 &114865105578247982
 MonoBehaviour:
@@ -3226,9 +3124,6 @@ MonoBehaviour:
   gainType: 1
   gainAmount: 15
   gainFrequency: 5
-  unitLayers:
-    serializedVersion: 2
-    m_Bits: 4096
   colorable: {fileID: 114225653643251762}
 --- !u!114 &114925394398635166
 MonoBehaviour:

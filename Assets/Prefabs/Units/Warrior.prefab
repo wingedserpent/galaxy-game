@@ -1462,7 +1462,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: cc633396b5f95da4b916357a5508ee4f, type: 3}
   m_Controller: {fileID: 9100000, guid: 0a9b0d8dff63a064b9e89ffe8e2ff327, type: 2}
-  m_CullingMode: 1
+  m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
@@ -1553,11 +1553,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62f760293f02abd4eaad5ef34ae49945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
+    type: 2}
+  targetingPrefab: {fileID: 0}
   deathEffectPrefab: {fileID: 100010, guid: 645413a00f7bd0242bbd6d0e5eb6f439, type: 2}
   damagedSound: {fileID: 0}
   deathSound: {fileID: 8300000, guid: 8b8b193dd11d0f140b03e7fd362e521a, type: 3}
-  unitHUDPrefab: {fileID: 114228570183982422, guid: 116573bf427a2bf498227561a33cfd0c,
-    type: 2}
+  targetedAreaPrefab: {fileID: 0}
   weaponEffects:
   - weaponType: ballistic
     isContinuousEffect: 0

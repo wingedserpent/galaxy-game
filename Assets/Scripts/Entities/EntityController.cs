@@ -10,23 +10,27 @@ public delegate void OnVisibilityUpdated(bool isVisible);
 
 public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
+	public EntityHUD unitHUDPrefab;
+	public GameObject targetingPrefab;
 	public GameObject deathEffectPrefab;
 	public AudioClip damagedSound;
 	public AudioClip deathSound;
-	public EntityHUD unitHUDPrefab;
-	
+	public GameObject targetedAreaPrefab;
+
 	public List<WeaponEffect> weaponEffects;
 
 	public AIState State { get; set; }
 	public bool DamagedTrigger { get; set; }
 	public bool UpdateVisibility { get; set; }
-	public bool IsVisible { get; private set; }
-	public EntityHUD EntityHUD { get; private set; }
+	public bool IsVisible { get; protected set; }
+	public EntityHUD EntityHUD { get; protected set; }
 	public Vector3 CurrentVelocity { get; set; }
-	public Entity AttackTarget { get; set; }
+	public Entity AttackTarget { get; protected set; }
+	public Vector3 AttackLocation { get; protected set; }
 	public bool AttackStartTrigger { get; set; }
 	public bool AttackEffectTrigger { get; set; }
 	public bool AttackEndTrigger { get; set; }
+	public bool IsSelected { get; protected set; }
 
 	protected bool isAttackingAndInRange = false;
 	protected float attackCooldown = 0f;
@@ -36,6 +40,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected WeaponEffect activeWeaponEffect;
 	protected int currentDamage = 0;
 	protected float damageIncreaseTimer = 0f;
+	protected GameObject targetedAreaMarker;
 
 	public static event OnDeath OnDeath = delegate { };
 
@@ -136,23 +141,34 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	protected virtual void HandleIdleState() {
-		if (entity.CanAttack) {
+		if (entity.CanAttackTarget) {
 			AttackTarget = CheckForTargets();
 			if (AttackTarget != null) {
+				SetState(AIState.ATTACKING);
+			}
+		} else if (entity.CanAttackLocation) {
+			if (GetTargetsAtAttackLocation(AttackLocation).Count > 0) {
 				SetState(AIState.ATTACKING);
 			}
 		}
 	}
 
-	protected Entity CheckForTargets() {
+	protected virtual Entity CheckForTargets() {
 		return (from target in vision.VisibleTargets.Where(x => x != null)
 				let distance = Vector3.Distance(target.transform.position, entity.transform.position)
-				where CanAttackTarget(target) && distance <= entity.Weapon.Range
+				where CanHitTarget(target) && distance <= entity.Weapon.Range
 				orderby distance ascending
 				select target).FirstOrDefault();
 	}
 
-	protected void HandleMovingState() {
+	protected virtual List<Entity> GetTargetsAtAttackLocation(Vector3 attackLocation) {
+		Collider[] overlaps = Physics.OverlapSphere(attackLocation, entity.Weapon.SplashRadius, LayerManager.Instance.damageableMask);
+		return (from target in overlaps.Select(x => x.GetComponentInParent<Entity>())
+				where CanHitTarget(target)
+				select target).ToList();
+	}
+
+	protected virtual void HandleMovingState() {
 		// Check if we've reached the destination
 		if (agent.enabled && !agent.pathPending) {
 			if (agent.remainingDistance <= agent.stoppingDistance) {
@@ -164,21 +180,56 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	protected virtual void HandleCombatState() {
-		if (AttackTarget == null || !AttackTarget.EntityController.IsVisible) {
-			//target disappeared or died
-			Stop();
-		} else {
-			if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.Weapon.Range) {
-				//out of range, stop attacking and reset weapon damage
-				StopAttacking();
+		if (entity.CanAttackTarget) {
+			if (AttackTarget == null || !AttackTarget.EntityController.IsVisible) {
+				//target disappeared or died
+				Stop();
+			} else {
+				if (Vector3.Distance(AttackTarget.transform.position, entity.transform.position) > entity.Weapon.Range) {
+					//out of range, stop attacking and reset weapon damage
+					StopAttacking();
 
-				//try to move into range if responding to an explicit attack command
-				if (entity.CanMove && isRespondingToAttackCommand) {
-					SetMoveDestination(FindTrueMoveDestination(AttackTarget.transform.position));
+					//try to move into range if responding to an explicit attack command
+					if (entity.CanMove && isRespondingToAttackCommand) {
+						SetMoveDestination(FindTrueMoveDestination(AttackTarget.transform.position));
+					} else {
+						//out of range and either can't move or not allowed to chase, so give up
+						SetState(AIState.IDLE);
+					}
 				} else {
-					//out of range and either can't move or not allowed to chase, so give up
-					SetState(AIState.IDLE);
+					//set initial attacking variables
+					if (!isAttackingAndInRange) {
+						isAttackingAndInRange = true;
+						AttackStartTrigger = true;
+					}
+
+					//in range, make sure we're not moving
+					StopMovement();
+
+					//increment damage timer
+					if (damageIncreaseTimer > 0f) {
+						damageIncreaseTimer -= Time.deltaTime;
+						if (damageIncreaseTimer <= 0f) {
+							SetCurrentDamage(currentDamage + 1);
+						}
+					}
+
+					//look at target's x/z position
+					Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
+											   transform.position.y,
+											   AttackTarget.transform.position.z);
+					transform.LookAt(lookTarget);
+
+					if (!isDelayingAttack && attackCooldown <= 0f) {
+						//do the attack after a delay (for visual effects)
+						StartCoroutine(DelayedAttack(AttackTarget));
+						AttackEffectTrigger = true;
+					}
 				}
+			}
+		} else if (entity.CanAttackLocation) {
+			if (GetTargetsAtAttackLocation(AttackLocation).Count == 0) {
+				Stop();
 			} else {
 				//set initial attacking variables
 				if (!isAttackingAndInRange) {
@@ -186,26 +237,9 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 					AttackStartTrigger = true;
 				}
 
-				//in range, make sure we're not moving
-				StopMovement();
-
-				//increment damage timer
-				if (damageIncreaseTimer > 0f) {
-					damageIncreaseTimer -= Time.deltaTime;
-					if (damageIncreaseTimer <= 0f) {
-						SetCurrentDamage(currentDamage + 1);
-					}
-				}
-
-				//look at target's x/z position
-				Vector3 lookTarget = new Vector3(AttackTarget.transform.position.x,
-										   transform.position.y,
-										   AttackTarget.transform.position.z);
-				transform.LookAt(lookTarget);
-
 				if (!isDelayingAttack && attackCooldown <= 0f) {
 					//do the attack after a delay (for visual effects)
-					StartCoroutine(DelayedAttack(AttackTarget));
+					StartCoroutine(DelayedLocationAttack(AttackLocation));
 					AttackEffectTrigger = true;
 				}
 			}
@@ -217,26 +251,48 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			isDelayingAttack = true;
 			yield return new WaitForSeconds(activeWeaponEffect.attackEffectTime);
 		}
+		isDelayingAttack = false;
 
 		if (attackTarget != null) {
 			bool targetDied = attackTarget.EntityController.TakeDamage(currentDamage);
+			DoSplashAttack(attackTarget);
+
 			if (targetDied) {
 				SetState(AIState.IDLE);
-			}
-
-			if (entity.Weapon.SplashRadius > 0f) {
-				Collider[] overlaps = Physics.OverlapSphere(attackTarget.transform.position, entity.Weapon.SplashRadius, LayerManager.Instance.damageableMask);
-				IEnumerable<Entity> damagedTargets = (from target in overlaps.Select(x => x.GetComponentInParent<Entity>())
-													  where target != attackTarget && CanSplashAttackTarget(target, attackTarget)
-													  select target);
-				foreach (Entity entity in damagedTargets) {
-					entity.EntityController.TakeDamage(currentDamage);
-				}
 			}
 		}
 
 		attackCooldown = entity.Weapon.AttackRate - activeWeaponEffect.attackEffectTime;
+	}
+
+	protected virtual void DoSplashAttack(Entity attackTarget) {
+		if (entity.Weapon.SplashRadius > 0f) {
+			Collider[] overlaps = Physics.OverlapSphere(attackTarget.transform.position, entity.Weapon.SplashRadius, LayerManager.Instance.damageableMask);
+			IEnumerable<Entity> damagedTargets = (from target in overlaps.Select(x => x.GetComponentInParent<Entity>())
+												  where target != attackTarget && CanSplashHitTarget(target, attackTarget)
+												  select target);
+			foreach (Entity entity in damagedTargets) {
+				entity.EntityController.TakeDamage(currentDamage);
+			}
+		}
+	}
+
+	protected virtual IEnumerator DelayedLocationAttack(Vector3 attackLocation) {
+		if (activeWeaponEffect.attackEffectTime > 0f) {
+			isDelayingAttack = true;
+			yield return new WaitForSeconds(activeWeaponEffect.attackEffectTime);
+		}
 		isDelayingAttack = false;
+
+		DoLocationAttack(attackLocation);
+
+		attackCooldown = entity.Weapon.AttackRate - activeWeaponEffect.attackEffectTime;
+	}
+
+	protected virtual void DoLocationAttack(Vector3 attackLocation) {
+		foreach (Entity entity in GetTargetsAtAttackLocation(attackLocation)) {
+			entity.EntityController.TakeDamage(currentDamage);
+		}
 	}
 
 	protected void SetCurrentDamage(int damage) {
@@ -261,21 +317,23 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	}
 
 	public virtual void Attack(Entity attackTarget) {
-		if (CanAttackTarget(attackTarget)) {
+		if (CanHitTarget(attackTarget)) {
 			isRespondingToAttackCommand = true;
 			AttackTarget = attackTarget;
 			SetState(AIState.ATTACKING);
 		}
 	}
 
-	protected bool CanAttackTarget(Entity target) {
-		return target != null && entity.CanAttack && target.TeamId != entity.TeamId
-			&& target.isInAir ? entity.canAttackAir : entity.canAttackGround;
+	public virtual void Attack(Vector3 attackTarget) {
+		//intended to be overridden
 	}
 
-	protected bool CanSplashAttackTarget(Entity target, Entity originalTarget) {
-		return target != null && target.TeamId != entity.TeamId 
-			&& (originalTarget.isInAir == target.isInAir);
+	protected bool CanHitTarget(Entity target) {
+		return target != null && target.TeamId != entity.TeamId && (target.isInAir ? entity.canAttackAir : entity.canAttackGround);
+	}
+
+	protected bool CanSplashHitTarget(Entity target, Entity originalTarget) {
+		return target != null && target.TeamId != entity.TeamId && originalTarget.isInAir == target.isInAir;
 	}
 
 	protected Vector3 FindTrueMoveDestination(Vector3 target, Vector3? groupMovementCenter = null) {
@@ -324,7 +382,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
-	protected void StopAttacking() {
+	protected virtual void StopAttacking() {
 		if (isAttackingAndInRange) {
 			isAttackingAndInRange = false;
 			AttackEndTrigger = true;
@@ -362,7 +420,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		isQuitting = true;
 	}
 
-	protected void OnDestroy() {
+	protected virtual void OnDestroy() {
 		VisibilityManager.VisibilityTargetDispatch -= VisibilityTargetDispatch;
 
 		if (!isQuitting && (OverallStateManager.Instance == null || !OverallStateManager.Instance.IsInSceneTransition)) {
@@ -384,6 +442,28 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				IsVisible = false;
 				OnVisibilityUpdated(false);
 			}
+		}
+	}
+
+	public virtual void OnSelected() {
+		IsSelected = true;
+	}
+
+	public virtual void OnDeselected() {
+		IsSelected = false;
+		DestroyTargetedAreaMarker();
+	}
+
+	protected void CreateTargetedAreaMarker() {
+		if (targetedAreaMarker == null) {
+			targetedAreaMarker = Instantiate<GameObject>(targetedAreaPrefab, AttackLocation, Quaternion.identity);
+		}
+	}
+
+	protected void DestroyTargetedAreaMarker() {
+		if (targetedAreaMarker != null) {
+			Destroy(targetedAreaMarker);
+			targetedAreaMarker = null;
 		}
 	}
 
@@ -410,14 +490,15 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (AttackStartTrigger) {
-			if (AttackTarget != null) {
+			if (AttackTarget != null || entity.CanAttackLocation) {
 				if (activeWeaponEffect.isContinuousEffect) {
 					foreach (Transform spawnPoint in activeWeaponEffect.projectileSpawnPoints) {
 						WeaponBeam beam = Instantiate<GameObject>(activeWeaponEffect.projectilePrefab.gameObject, spawnPoint).GetComponent<WeaponBeam>();
 						beam.transform.localPosition = Vector3.zero;
 						if (beam != null) {
 							beam.start = transform;
-							beam.target = AttackTarget.transform;
+							beam.target = AttackTarget != null ? AttackTarget.transform : null;
+							beam.targetLocation = AttackLocation;
 							beam.totalEffectTime = entity.Weapon.DamageIncreaseTime;
 						}
 					}
@@ -436,13 +517,14 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				audioSource.PlayOneShot(activeWeaponEffect.attackSound);
 			}
 
-			if (AttackTarget != null) {
+			if (AttackTarget != null || entity.CanAttackLocation) {
 				if (!activeWeaponEffect.isContinuousEffect) {
 					if (activeWeaponEffect.projectilePrefab != null) {
 						foreach (Transform spawnPoint in activeWeaponEffect.projectileSpawnPoints) {
 							Tweener tweener = Instantiate<GameObject>(activeWeaponEffect.projectilePrefab.gameObject, spawnPoint.position, spawnPoint.rotation).GetComponent<Tweener>();
 							if (tweener != null) {
-								tweener.target = AttackTarget.transform;
+								tweener.target = AttackTarget != null ? AttackTarget.transform : null;
+								tweener.TargetPos = AttackLocation;
 								tweener.time = activeWeaponEffect.attackEffectTime;
 								tweener.enabled = true;
 							}
@@ -452,7 +534,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 					if (activeWeaponEffect.existingProjectiles != null) {
 						foreach (GameObject projectileGO in activeWeaponEffect.existingProjectiles) {
 							Tweener projectile = projectileGO.GetComponent<Tweener>();
-							projectile.target = AttackTarget.transform;
+							projectile.target = AttackTarget != null ? AttackTarget.transform : null;
+							projectile.TargetPos = AttackLocation;
 							projectile.time = activeWeaponEffect.attackEffectTime;
 							projectile.enabled = true;
 						}
@@ -480,7 +563,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				animator.SetFloat("velocityZ", CurrentVelocity.z);
 			}
 
-			if (entity.CanAttack) {
+			if (entity.CanAttackTarget || entity.CanAttackLocation) {
 				animator.SetBool("isAttacking", State == AIState.ATTACKING);
 			}
 		}
@@ -502,15 +585,19 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			CurrentVelocity = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 		}
 
-		if (entity.CanAttack) {
+		if (entity.CanAttackTarget || entity.CanAttackLocation) {
 			AttackStartTrigger = e.Reader.ReadBoolean();
 			AttackEffectTrigger = e.Reader.ReadBoolean();
 			AttackEndTrigger = e.Reader.ReadBoolean();
-			string attackTargetId = e.Reader.ReadString();
 
+			string attackTargetId = e.Reader.ReadString();
 			if (!attackTargetId.Equals(lastAttackTargetId)) {
 				AttackTarget = ClientEntityManager.Instance.GetEntity(attackTargetId);
 				lastAttackTargetId = attackTargetId;
+			}
+
+			if (entity.CanAttackLocation) {
+				AttackLocation = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
 			}
 
 			SetActiveWeaponEffect();
@@ -525,11 +612,16 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			e.Writer.Write(CurrentVelocity.x); e.Writer.Write(CurrentVelocity.y); e.Writer.Write(CurrentVelocity.z);
 		}
 
-		if (entity.CanAttack) {
+		if (entity.CanAttackTarget || entity.CanAttackLocation) {
 			e.Writer.Write(AttackStartTrigger);
 			e.Writer.Write(AttackEffectTrigger);
 			e.Writer.Write(AttackEndTrigger);
 			e.Writer.Write(AttackTarget != null ? AttackTarget.ID : "");
+			
+			if (entity.CanAttackLocation) {
+				e.Writer.Write(AttackLocation.x); e.Writer.Write(AttackLocation.y); e.Writer.Write(AttackLocation.z);
+			}
+
 			AttackStartTrigger = false;
 			AttackEffectTrigger = false;
 			AttackEndTrigger = false;

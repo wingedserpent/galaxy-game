@@ -20,6 +20,7 @@ public class PlayerInputManager : MonoBehaviour {
 	private bool isInBuildMode = false;
 	private GameObject currentTargetingObject;
 	private OwnedObject currentTargetingReference;
+	private Entity currentTargetingEntity;
 	private int currentTargetingResourceCost;
 	private Collider currentTargetingCollider;
 	private bool isTargetingValid = false;
@@ -81,19 +82,23 @@ public class PlayerInputManager : MonoBehaviour {
 					if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
 						if (currentTargetingObject != null) {
 							//when targeting object exists, some inputs are handled differently
-							if (Input.GetMouseButtonUp(0) && isTargetingValid) {
+							if (Input.GetMouseButtonUp(0) && (currentTargetingReference == null || isTargetingValid)) {
 								//check resource cost
-								if (clientGameManager.MyPlayer.Resources >= currentTargetingResourceCost) {
-									if (currentTargetingReference is Structure) {
+								if (currentTargetingResourceCost == 0 || clientGameManager.MyPlayer.Resources >= currentTargetingResourceCost) {
+									if (currentTargetingReference == null) {
+										//assume no targeting reference == attacking location
+										IssueAttackLocationCommand(new List<string>() { currentTargetingEntity.ID }, currentTargetingObject.transform.position);
+									} else if (currentTargetingReference is Structure) {
 										IssueConstructionRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
 									} else {
 										IssuePlayerEventRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
 									}
 								}
-								Destroy(currentTargetingObject);
+
+								SetTargeting(null, 0);
 								CancelBuildMode();
 							} else if (Input.GetMouseButtonDown(1)) {
-								Destroy(currentTargetingObject);
+								SetTargeting(null, 0);
 							} else {
 								bool isValidPlacement = false;
 
@@ -102,7 +107,14 @@ public class PlayerInputManager : MonoBehaviour {
 								if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.groundMask)) {
 									currentTargetingObject.transform.position = hit.point;
 
-									if (currentTargetingReference is Structure) {
+									if (currentTargetingReference == null) {
+										//assume no targeting reference == attacking location
+										if (currentTargetingEntity != null) {
+											isValidPlacement = Vector3.Distance(currentTargetingEntity.transform.position, currentTargetingObject.transform.position) <= currentTargetingEntity.Weapon.Range;
+										} else {
+											isValidPlacement = true;
+										}
+									} else if (currentTargetingReference is Structure) {
 										//navmesh check
 										NavMeshHit navHit;
 										if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
@@ -186,7 +198,7 @@ public class PlayerInputManager : MonoBehaviour {
 										Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
 										if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
 											IssueAttackCommand(SelectedEntities
-												.Where(x => x.CanAttack && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
+												.Where(x => x.CanAttackTarget && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
 												.Select(x => x.ID).ToList(), hitEntity.ID);
 										} else {
 											IssueMoveCommand(SelectedEntities.Where(x => x.CanMove).Select(x => x.ID).ToList(), hit.point);
@@ -210,19 +222,13 @@ public class PlayerInputManager : MonoBehaviour {
 								if (entityRef != null) {
 									if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
 										DeselectAll();
-										currentTargetingReference = entityRef;
-										currentTargetingResourceCost = (entityRef as Structure).resourceCost;
-										currentTargetingObject = clientEntityManager.SpawnStructureTargeting(currentTargetingReference.typeId);
-										currentTargetingCollider = currentTargetingObject.GetComponentInChildren<Collider>();
+										SetTargeting(Instantiate<GameObject>(entityRef.GetComponent<EntityController>().targetingPrefab), (entityRef as Structure).resourceCost, entityRef, null);
 									}
 								} else {
 									PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.targetTypeId);
 									if (playerEventRef != null && clientGameManager.MyPlayer.Resources >= playerEventRef.resourceCost) {
 										DeselectAll();
-										currentTargetingReference = playerEventRef;
-										currentTargetingResourceCost = playerEventRef.resourceCost;
-										currentTargetingObject = clientEntityManager.SpawnPlayerEventTargeting(currentTargetingReference.typeId);
-										currentTargetingCollider = currentTargetingObject.GetComponentInChildren<Collider>();
+										SetTargeting(Instantiate<GameObject>(playerEventRef.targetingPrefab), playerEventRef.resourceCost, playerEventRef, null);
 									}
 								}
 							}
@@ -233,6 +239,16 @@ public class PlayerInputManager : MonoBehaviour {
 					if (SelectedEntities.Count > 0) {
 						if (Input.GetButtonDown("Stop")) {
 							IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
+						}
+
+						if (Input.GetButtonDown("Attack")) {
+							SetTargeting(null, 0);
+
+							foreach (Entity selectedEntity in SelectedEntities) {
+								if (currentTargetingObject == null && selectedEntity.CanAttackLocation) {
+									SetTargeting(Instantiate<GameObject>(selectedEntity.EntityController.targetingPrefab), 0, null, selectedEntity);
+								}
+							}
 						}
 
 						if (Input.anyKeyDown) {
@@ -275,6 +291,20 @@ public class PlayerInputManager : MonoBehaviour {
 		}
 	}
 
+	private void SetTargeting(GameObject targetingObject, int resourceCost, OwnedObject referencedObject = null, Entity targetingEntity = null) {
+		if (targetingObject == null && currentTargetingObject != null) {
+			Destroy(currentTargetingObject);
+		}
+		currentTargetingObject = targetingObject;
+		currentTargetingResourceCost = resourceCost;
+		currentTargetingReference = referencedObject;
+		currentTargetingEntity = targetingEntity;
+		if (currentTargetingObject != null) {
+			currentTargetingCollider = currentTargetingObject.GetComponentInChildren<Collider>();
+		}
+		isTargetingValid = false;
+	}
+
 	private void SetTargetingValid(bool newIsValid) {
 		if (newIsValid && !isTargetingValid) {
 			isTargetingValid = newIsValid;
@@ -305,6 +335,8 @@ public class PlayerInputManager : MonoBehaviour {
 		if (selectionMarker != null) {
 			selectionMarker.ToggleRendering(true);
 		}
+
+		entity.EntityController.OnSelected();
 	}
 
 	private void DeselectEntity(Entity entity, bool removeFromSelection) {
@@ -316,6 +348,8 @@ public class PlayerInputManager : MonoBehaviour {
 		if (removeFromSelection) {
 			SelectedEntities.Remove(entity);
 		}
+
+		entity.EntityController.OnDeselected();
 	}
 
 	private void DeselectAll(bool alsoStopSelecting=true) {
@@ -329,9 +363,7 @@ public class PlayerInputManager : MonoBehaviour {
 			isSelecting = false;
 		}
 
-		if (currentTargetingObject != null) {
-			Destroy(currentTargetingObject);
-		}
+		SetTargeting(null, 0);
 
 		uiManager.UpdateSelectedEntities(SelectedEntities);
 	}
@@ -362,6 +394,14 @@ public class PlayerInputManager : MonoBehaviour {
 		if (entityIds.Count > 0) {
 			EntityCommand attackCommand = new EntityCommand(CommandType.ATTACK, entityIds);
 			attackCommand.TargetEntityId = targetEntityId;
+			clientNetworkManager.SendCommand(attackCommand);
+		}
+	}
+
+	private void IssueAttackLocationCommand(List<string> entityIds, Vector3 attackLocation) {
+		if (entityIds.Count > 0) {
+			EntityCommand attackCommand = new EntityCommand(CommandType.ATTACK_LOCATION, entityIds);
+			attackCommand.Point = attackLocation;
 			clientNetworkManager.SendCommand(attackCommand);
 		}
 	}

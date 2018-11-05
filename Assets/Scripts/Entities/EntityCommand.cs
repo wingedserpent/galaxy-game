@@ -20,25 +20,18 @@ public class EntityCommand : IDarkRiftSerializable {
 	public void Deserialize(DeserializeEvent e) {
 		Type = (CommandType)e.Reader.ReadInt32();
 		ActingEntityIds = new List<string>(e.Reader.ReadStrings());
-
-		if (Type == CommandType.MOVE) {
-			Point = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
-		} else if (Type == CommandType.ATTACK) {
-			TargetEntityId = e.Reader.ReadString();
+		Point = new Vector3(e.Reader.ReadSingle(), e.Reader.ReadSingle(), e.Reader.ReadSingle());
+		TargetEntityId = e.Reader.ReadString();
+		if ("".Equals(TargetEntityId)) {
+			TargetEntityId = null;
 		}
 	}
 
 	public void Serialize(SerializeEvent e) {
 		e.Writer.Write((int)Type);
 		e.Writer.Write(ActingEntityIds.ToArray());
-
-		if (Type == CommandType.MOVE) {
-			e.Writer.Write(Point.x);
-			e.Writer.Write(Point.y);
-			e.Writer.Write(Point.z);
-		} else if (Type == CommandType.ATTACK) {
-			e.Writer.Write(TargetEntityId);
-		}
+		e.Writer.Write(Point.x);	e.Writer.Write(Point.y);	e.Writer.Write(Point.z);
+		e.Writer.Write(TargetEntityId == null ? "" : TargetEntityId);
 	}
 }
 
@@ -46,6 +39,8 @@ public enum CommandType {
 	MOVE,
 	STOP,
 	ATTACK,
+	ATTACK_LOCATION,
 	NONE,
-	ABILITY_SHIELD
+	ABILITY_SHIELD,
+	TOGGLE_MODE
 }

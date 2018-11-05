@@ -11,7 +11,8 @@ public class Entity : OwnedObject {
 	public float shieldRechargeCooldown = 5f;
 
 	public virtual bool CanMove { get { return false; } }
-	public virtual bool CanAttack { get { return false; } }
+	public virtual bool CanAttackTarget { get { return false; } }
+	public virtual bool CanAttackLocation { get { return false; } }
 	
 	public Weapon Weapon { get; set; }
 	public List<Equipment> Equipment { get; set; }

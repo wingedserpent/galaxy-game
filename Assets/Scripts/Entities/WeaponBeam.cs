@@ -6,6 +6,7 @@ public class WeaponBeam : MonoBehaviour {
 
 	public Transform start;
 	public Transform target;
+	public Vector3 targetLocation;
 	public float totalEffectTime;
 	public List<WeaponBeamStage> stages;
 
@@ -22,14 +23,15 @@ public class WeaponBeam : MonoBehaviour {
 	}
 
 	private void Update() {
-		if (start == null || target == null) {
+		if (start == null || (target == null && targetLocation == null)) {
 			Destroy(gameObject);
 		} else {
 			elapsedTime += Time.deltaTime;
+			Vector3 targetPos = target != null ? target.position : (Vector3)targetLocation;
 
 			lineRenderer.SetPosition(0, start.position);
-			lineRenderer.SetPosition(1, (target.position + start.position) / 2);
-			lineRenderer.SetPosition(2, target.position);
+			lineRenderer.SetPosition(1, (targetPos + start.position) / 2);
+			lineRenderer.SetPosition(2, targetPos);
 
 			if (currentStageIndex < stages.Count && (elapsedTime / totalEffectTime) >= stages[currentStageIndex].percentage) {
 				lineRenderer.widthMultiplier = stages[currentStageIndex].widthMultiplier;

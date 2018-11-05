@@ -144,14 +144,6 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 	}
 
-	public GameObject SpawnStructureTargeting(string structureTypeId) {
-		return entityDatabase.GetStructureTargeting(structureTypeId);
-	}
-
-	public GameObject SpawnPlayerEventTargeting(string playerEventTypeId) {
-		return entityDatabase.GetPlayerEventTargeting(playerEventTypeId);
-	}
-
 	public Entity GetEntityReference(string typeId) {
 		return entityDatabase.GetEntityReference(typeId);
 	}

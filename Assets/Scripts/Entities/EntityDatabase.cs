@@ -47,11 +47,6 @@ public class EntityDatabase : ScriptableObject {
 		return Instantiate<GameObject>(GetEntityReference(typeId).gameObject, position, rotation, parent).GetComponent<Entity>();
 	}
 
-	public GameObject GetStructureTargeting(string structureTypeId, Transform parent = null) {
-		Structure structure = GetEntityReference(structureTypeId) as Structure;
-		return Instantiate<GameObject>(structure.constructionPrefab, parent);
-	}
-
 	public PlayerEvent GetPlayerEventReference(string typeId) {
 		if (playerEventMap == null) {
 			playerEventMap = new Dictionary<string, PlayerEvent>();
@@ -66,10 +61,5 @@ public class EntityDatabase : ScriptableObject {
 			return playerEventMap[typeId];
 		}
 		return null;
-	}
-
-	public GameObject GetPlayerEventTargeting(string playerEventTypeId, Transform parent = null) {
-		PlayerEvent playerEvent = GetPlayerEventReference(playerEventTypeId);
-		return Instantiate<GameObject>(playerEvent.targetingPrefab, parent);
 	}
 }

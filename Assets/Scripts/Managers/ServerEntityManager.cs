@@ -93,7 +93,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 			//navmesh check
 			NavMeshHit navHit;
 			if (NavMesh.SamplePosition(spawnPos, out navHit, 0.1f, NavMesh.AllAreas)) {
-				GameObject construction = entityDatabase.GetStructureTargeting(structureTypeId);
+				Entity entityRef = entityDatabase.GetEntityReference(structureTypeId);
+				GameObject construction = Instantiate<GameObject>(entityRef.GetComponent<EntityController>().targetingPrefab);
 				construction.transform.position = spawnPos;
 				Collider constructionCollider = construction.GetComponentInChildren<Collider>();
 
@@ -210,10 +211,12 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 					entity.EntityController.Move(command.Point, groupMovementCenter);
 				} else if (command.Type == CommandType.STOP) {
 					entity.EntityController.Stop();
-				} else if (command.Type == CommandType.ATTACK && entity.CanAttack) {
+				} else if (command.Type == CommandType.ATTACK && entity.CanAttackTarget) {
 					if (entities.ContainsKey(command.TargetEntityId)) {
 						entity.EntityController.Attack(entities[command.TargetEntityId]);
 					}
+				} else if (command.Type == CommandType.ATTACK_LOCATION && entity.CanAttackLocation) {
+					entity.EntityController.Attack(command.Point);
 				} else {
 					entity.EntityController.ExecuteCommand(command.Type);
 				}
