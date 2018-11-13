@@ -19,8 +19,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4188910531276476}
-  - component: {fileID: 114652484054984634}
-  - component: {fileID: 114829145275177384}
   - component: {fileID: 199210905024662560}
   - component: {fileID: 198600046562304068}
   m_Layer: 0
@@ -43,31 +41,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114652484054984634
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1899141640574806}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 039587c051912eb4ead9e58344c5f3ce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  multiplier: 1
---- !u!114 &114829145275177384
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1899141640574806}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29014cd42b6d273408e0ceefd336c0b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  minDuration: 0
-  maxDuration: 1
 --- !u!198 &198600046562304068
 ParticleSystem:
   m_ObjectHideFlags: 1
@@ -75,9 +48,9 @@ ParticleSystem:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1899141640574806}
   serializedVersion: 5
-  lengthInSec: 3
+  lengthInSec: 1
   simulationSpeed: 1
-  stopAction: 0
+  stopAction: 2
   looping: 0
   prewarm: 0
   playOnAwake: 1

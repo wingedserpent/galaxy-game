@@ -641,11 +641,11 @@ MonoBehaviour:
   weaponEffects:
   - weaponType: mortar
     isContinuousEffect: 0
-    projectilePrefab: {fileID: 1231709648642028, guid: e6929d500b1c58543b6a3b20e7308664,
+    projectilePrefab: {fileID: 1961782797708748, guid: 829775bbc6cf4194691f173af73c5e91,
       type: 2}
     projectileSpawnPoints: []
     existingProjectiles: []
-    attackEffectTime: 1
+    attackEffectTime: 1.5
     attackSound: {fileID: 8300000, guid: 4f1ad1a2a4d33484db06895ac4295c80, type: 3}
   toggleModeKey: 109
   toggleModeDuration: 2

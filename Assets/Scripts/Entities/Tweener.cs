@@ -6,6 +6,9 @@ public class Tweener : MonoBehaviour {
 	
 	public float speed = 0f;
 	public float time = 0f;
+	public float midPointHeightDelta = 0f;
+	public bool orientToPath = false;
+	public AnimationCurve easingCurve;
 	public Transform target;
 	public Vector3 TargetPos { get; set; }
 	public LeanTweenType easeType = LeanTweenType.notUsed;
@@ -35,7 +38,26 @@ public class Tweener : MonoBehaviour {
 			TargetPos = target.position;
 		}
 
-		LTDescr ltdescr = LeanTween.move(gameObject, TargetPos, time).setEase(easeType);
+		LTDescr ltdescr;
+		if (midPointHeightDelta > 0f) {
+			List<Vector3> TargetPath = new List<Vector3>();
+			TargetPath.Add(transform.position); //first element indicates initial angle
+			TargetPath.Add(transform.position); //first element indicates initial angle
+			TargetPath.Add(((TargetPos + transform.position) / 2) + new Vector3(0f, midPointHeightDelta, 0f));
+			TargetPath.Add(TargetPos);
+			TargetPath.Add(TargetPos); //must be added twice since last element only indicates final angle
+			ltdescr = LeanTween.moveSpline(gameObject, TargetPath.ToArray(), time);
+		} else {
+			ltdescr = LeanTween.move(gameObject, TargetPos, time);
+		}
+
+		ltdescr.setOrientToPath(orientToPath);
+
+		if (easingCurve != null) {
+			ltdescr.setEase(easingCurve);
+		} else {
+			ltdescr.setEase(easeType);
+		}
 
 		if (speed > 0f) {
 			ltdescr.setSpeed(speed);
