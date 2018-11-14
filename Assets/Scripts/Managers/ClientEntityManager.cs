@@ -84,16 +84,16 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 		}
 	}
 
-	public void DestroyEntity(string entityId, float t = 0f) {
+	public void RemoveEntity(string entityId) {
 		if (entities.ContainsKey(entityId)) {
-			Destroy(entities[entityId].gameObject, t);
+			//Destroy(entities[entityId].gameObject, t); entities now destroy themselves
 			entities.Remove(entityId);
 
 			if (MySquad.ContainsKey(entityId)) {
 				MySquad.Remove(entityId);
 
 				if (MySquad.Count == 0) {
-					clientGameManager.OnSquadDead();
+					clientGameManager.OnSquadGone();
 				}
 			}
 		}
@@ -129,18 +129,24 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public void HandleEntityDeath(string entityId) {
 		if (entities.ContainsKey(entityId)) {
 			Entity entity = entities[entityId];
-			entity.EntityController.Die();
+			entity.EntityController.Die(true, 1f);
+			RemoveEntity(entity.ID);
+		}
+	}
 
-			DestroyEntity(entity.ID, 1f);
+	public void HandleEntityDespawn(string entityId) {
+		if (entities.ContainsKey(entityId)) {
+			Entity entity = entities[entityId];
+			entity.EntityController.CleanUpForDespawn();
+			RemoveEntity(entity.ID);
+			Destroy(entity.gameObject);
 		}
 	}
 
 	public void HandlePlayerEventEnd(string playerEventId) {
 		if (playerEvents.ContainsKey(playerEventId)) {
-			PlayerEvent playerEvent = playerEvents[playerEventId];
-			playerEvent.End();
+			playerEvents[playerEventId].End();
 			playerEvents.Remove(playerEventId);
-			//playerEvents will destroy themselves when effects end
 		}
 	}
 

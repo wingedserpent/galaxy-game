@@ -112,6 +112,8 @@ public class ClientNetworkManager : Singleton<ClientNetworkManager> {
 						}
 					} else if (message.Tag == NetworkTags.EntityDeath) {
 						ClientEntityManager.Instance.HandleEntityDeath(reader.ReadString());
+					} else if (message.Tag == NetworkTags.EntityDespawn) {
+						ClientEntityManager.Instance.HandleEntityDespawn(reader.ReadString());
 					} else if (message.Tag == NetworkTags.PlayerEventEnd) {
 						ClientEntityManager.Instance.HandlePlayerEventEnd(reader.ReadString());
 					} else if (message.Tag == NetworkTags.CapturePoint) {

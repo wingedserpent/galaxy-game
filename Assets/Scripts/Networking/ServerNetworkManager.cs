@@ -308,6 +308,18 @@ public class ServerNetworkManager : Singleton<ServerNetworkManager> {
 		}
 	}
 
+	public void SendEntityDespawn(Entity entity) {
+		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
+			writer.Write(entity.ID);
+
+			using (Message message = Message.Create(NetworkTags.EntityDespawn, writer)) {
+				foreach (IClient client in InGameClientAccountMap.Keys) {
+					client.SendMessage(message, SendMode.Unreliable);
+				}
+			}
+		}
+	}
+
 	public void SendPlayerEventEnd(PlayerEvent playerEvent) {
 		using (DarkRiftWriter writer = DarkRiftWriter.Create()) {
 			writer.Write(playerEvent.ID);

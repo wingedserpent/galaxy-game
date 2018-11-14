@@ -71,223 +71,96 @@ public class PlayerInputManager : MonoBehaviour {
 
 				//cancel should override all other inputs
 				if (Input.GetButtonDown("Cancel")) {
-					if (isInBuildMode) {
-						CancelBuildMode();
-					} else {
-						DeselectAll();
-						LastFocusedEntity = null;
-						rtsCamera.ClearFollowTarget();
-					}
+					DoCancel();
 				} else {
 					if (!EventSystem.current.IsPointerOverGameObject()) { //if not over UI element
 						if (currentTargetingObject != null) {
-							//when targeting object exists, some inputs are handled differently
-							if (Input.GetMouseButtonUp(0) && (currentTargetingReference == null || isTargetingValid)) {
-								//check resource cost
-								if (currentTargetingResourceCost == 0 || clientGameManager.MyPlayer.Resources >= currentTargetingResourceCost) {
-									if (currentTargetingReference == null) {
-										//assume no targeting reference == attacking location
-										IssueAttackLocationCommand(new List<string>() { currentTargetingEntity.ID }, currentTargetingObject.transform.position);
-									} else if (currentTargetingReference is Structure) {
-										IssueConstructionRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
-									} else {
-										IssuePlayerEventRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
-									}
-								}
-
-								SetTargeting(null, 0);
-								CancelBuildMode();
-							} else if (Input.GetMouseButtonDown(1)) {
-								SetTargeting(null, 0);
-							} else {
-								bool isValidPlacement = false;
-
-								Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-								RaycastHit hit;
-								if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.groundMask)) {
-									currentTargetingObject.transform.position = hit.point;
-
-									if (currentTargetingReference == null) {
-										//assume no targeting reference == attacking location
-										if (currentTargetingEntity != null) {
-											isValidPlacement = Vector3.Distance(currentTargetingEntity.transform.position, currentTargetingObject.transform.position) <= currentTargetingEntity.Weapon.Range;
-										} else {
-											isValidPlacement = true;
-										}
-									} else if (currentTargetingReference is Structure) {
-										//navmesh check
-										NavMeshHit navHit;
-										if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
-											//collision/overlap check
-											Collider[] colliders = Physics.OverlapBox(currentTargetingCollider.bounds.center,
-												currentTargetingCollider.bounds.extents, currentTargetingCollider.transform.rotation, LayerManager.Instance.constructionOverlapMask);
-											if (colliders.Count(x => x != currentTargetingCollider) == 0) {
-												isValidPlacement = true;
-											}
-										}
-									} else {
-										isValidPlacement = true;
-									}
-								}
-
-								SetTargetingValid(isValidPlacement);
-							}
+							HandleMouseTargetingInput();
 						} else {
-							//mouse-related inputs
-							if (Input.GetMouseButtonDown(0)) {
-								CancelBuildMode();
-								isSelecting = true;
-								mouseStartPosition = Input.mousePosition;
-							}
-
-							if (Input.GetMouseButtonUp(0)) {
-								bool isMultiselecting = Input.GetButton("Multiselect");
-
-								if (!isMultiselecting) {
-									DeselectAll(false);
-								}
-
-								if (isSelecting) {
-									Bounds bounds = GetViewportBounds(mouseStartPosition, Input.mousePosition);
-									if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
-										//selection box is large enough, select entities inside
-										IEnumerable<Entity> entitiesToConsider;
-										if (OverallStateManager.Instance.IsOfflineTest) {
-											entitiesToConsider = FindObjectsOfType<Entity>();
-										} else {
-											entitiesToConsider = clientEntityManager.MySquad.Values;
-										}
-
-										foreach (Entity hitEntity in entitiesToConsider.Where(x => IsWithinBounds(bounds, x.transform.position))) {
-											if (!SelectedEntities.Contains(hitEntity)) {
-												SelectEntity(hitEntity);
-											} else if (isMultiselecting) {
-												DeselectEntity(hitEntity, true);
-											}
-										}
-
-										uiManager.UpdateSelectedEntities(SelectedEntities);
-									} else {
-										//selection box is too small, do point selection
-										Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-										RaycastHit hit;
-										if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
-											Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-											if (hitEntity != null && hitEntity.PlayerId == clientGameManager.MyPlayer.ID) {
-												if (!SelectedEntities.Contains(hitEntity)) {
-													SelectEntity(hitEntity);
-												} else if (isMultiselecting) {
-													DeselectEntity(hitEntity, true);
-												}
-											}
-										}
-
-										uiManager.UpdateSelectedEntities(SelectedEntities);
-									}
-								}
-
-								isSelecting = false;
-							}
-
-							if (Input.GetMouseButtonUp(1)) {
-								if (SelectedEntities.Count > 0) {
-									Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-									RaycastHit hit;
-
-									if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
-										Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
-										if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
-											IssueAttackCommand(SelectedEntities
-												.Where(x => x.CanAttackTarget && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
-												.Select(x => x.ID).ToList(), hitEntity.ID);
-										} else {
-											IssueMoveCommand(SelectedEntities.Where(x => x.CanMove).Select(x => x.ID).ToList(), hit.point);
-										}
-									}
-								}
-							}
-						} //end current construction is null
-					} //end UI element check
-
-					//inputs that can be accepted even when hovering mouse over ui element
-					if (Input.GetButtonDown("Build")) {
-						DeselectAll();
-						isInBuildMode = true;
-						uiManager.OpenBuildMenu(buildCommands);
-					} else if (isInBuildMode) {
-						foreach (BuildCommand buildCommand in buildCommands) {
-							if (Input.GetKeyDown(buildCommand.key)) {
-								//check resource cost
-								Entity entityRef = clientEntityManager.GetEntityReference(buildCommand.targetTypeId);
-								if (entityRef != null) {
-									if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
-										DeselectAll();
-										SetTargeting(Instantiate<GameObject>(entityRef.GetComponent<EntityController>().targetingPrefab), (entityRef as Structure).resourceCost, entityRef, null);
-									}
-								} else {
-									PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.targetTypeId);
-									if (playerEventRef != null && clientGameManager.MyPlayer.Resources >= playerEventRef.resourceCost) {
-										DeselectAll();
-										SetTargeting(Instantiate<GameObject>(playerEventRef.targetingPrefab), playerEventRef.resourceCost, playerEventRef, null);
-									}
-								}
-							}
+							HandleMouseInput();
 						}
 					}
 
-					//other selection-based inputs
+					HandleMiscInputs();
+					
 					if (SelectedEntities.Count > 0) {
-						if (Input.GetButtonDown("Stop")) {
-							IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
-						}
-
-						if (Input.GetButtonDown("Attack")) {
-							SetTargeting(null, 0);
-
-							foreach (Entity selectedEntity in SelectedEntities) {
-								if (currentTargetingObject == null && selectedEntity.CanAttackLocation) {
-									SetTargeting(Instantiate<GameObject>(selectedEntity.EntityController.targetingPrefab), 0, null, selectedEntity);
-								}
-							}
-						}
-
-						if (Input.anyKeyDown) {
-							Dictionary<CommandType, List<Entity>> commandEntites = new Dictionary<CommandType, List<Entity>>();
-
-							foreach (Entity selectedEntity in SelectedEntities) {
-								CommandType resultCommandType = selectedEntity.EntityController.GetCommandTypeFromInput();
-								if (resultCommandType != CommandType.NONE) {
-									if (!commandEntites.ContainsKey(resultCommandType)) {
-										commandEntites.Add(resultCommandType, new List<Entity>());
-									}
-									commandEntites[resultCommandType].Add(selectedEntity);
-								}
-							}
-
-							foreach (KeyValuePair<CommandType, List<Entity>> commandEntity in commandEntites) {
-								IssueAbilityCommand(commandEntity.Value.Select(x => x.ID).ToList(), commandEntity.Key);
-							}
-						}
-
-						if (Input.GetButtonDown("CameraFocus")) {
-							if (SelectedEntities.Count > 0) {
-								if (SelectedEntities[0].Equals(LastFocusedEntity)) {
-									LastFocusedEntity = SelectedEntities[0];
-									rtsCamera.SetFollowTarget(LastFocusedEntity.transform);
-								} else {
-									LastFocusedEntity = SelectedEntities[0];
-									rtsCamera.RefocusOn(LastFocusedEntity.transform.position);
-								}
-							}
-						}
+						HandleSelectionBasedInputs();
 					}
+				}
 
-					if (SelectedEntities.Count == 0 || !SelectedEntities[0].Equals(LastFocusedEntity)) {
-						LastFocusedEntity = null;
-						rtsCamera.ClearFollowTarget();
-					}
-				} //end non-cancel
+				if (SelectedEntities.Count == 0 || !SelectedEntities[0].Equals(LastFocusedEntity)) {
+					LastFocusedEntity = null;
+					rtsCamera.ClearFollowTarget();
+				}
 			}
+		}
+	}
+
+	private void DoCancel() {
+		if (isInBuildMode) {
+			if (currentTargetingObject != null) {
+				SetTargeting(null, 0);
+			} else {
+				CancelBuildMode();
+			}
+		} else if (rtsCamera.FollowingTarget) {
+			LastFocusedEntity = null;
+			rtsCamera.ClearFollowTarget();
+		} else {
+			DeselectAll();
+		}
+	}
+
+	private void HandleMouseTargetingInput() {
+		if (Input.GetMouseButtonUp(0) && (currentTargetingReference == null || isTargetingValid)) {
+			//check resource cost
+			if (currentTargetingResourceCost == 0 || clientGameManager.MyPlayer.Resources >= currentTargetingResourceCost) {
+				if (currentTargetingReference == null) {
+					//assume no targeting reference == attacking location
+					IssueAttackLocationCommand(new List<string>() { currentTargetingEntity.ID }, currentTargetingObject.transform.position);
+				} else if (currentTargetingReference is Structure) {
+					IssueConstructionRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
+				} else {
+					IssuePlayerEventRequest(currentTargetingReference.typeId, currentTargetingObject.transform.position);
+				}
+			}
+
+			SetTargeting(null, 0);
+			CancelBuildMode();
+		} else if (Input.GetMouseButtonDown(1)) {
+			SetTargeting(null, 0);
+		} else {
+			bool isValidPlacement = false;
+
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.groundMask)) {
+				currentTargetingObject.transform.position = hit.point;
+
+				if (currentTargetingReference == null) {
+					//assume no targeting reference == attacking location
+					if (currentTargetingEntity != null) {
+						isValidPlacement = Vector3.Distance(currentTargetingEntity.transform.position, currentTargetingObject.transform.position) <= currentTargetingEntity.Weapon.Range;
+					} else {
+						isValidPlacement = true;
+					}
+				} else if (currentTargetingReference is Structure) {
+					//navmesh check
+					NavMeshHit navHit;
+					if (NavMesh.SamplePosition(hit.point, out navHit, 0.1f, NavMesh.AllAreas)) {
+						//collision/overlap check
+						Collider[] colliders = Physics.OverlapBox(currentTargetingCollider.bounds.center,
+							currentTargetingCollider.bounds.extents, currentTargetingCollider.transform.rotation, LayerManager.Instance.constructionOverlapMask);
+						if (colliders.Count(x => x != currentTargetingCollider) == 0) {
+							isValidPlacement = true;
+						}
+					}
+				} else {
+					isValidPlacement = true;
+				}
+			}
+
+			SetTargetingValid(isValidPlacement);
 		}
 	}
 
@@ -319,6 +192,152 @@ public class PlayerInputManager : MonoBehaviour {
 				Color color = renderer.material.color;
 				color.b = color.g = 0f;
 				renderer.material.color = color;
+			}
+		}
+	}
+
+	private void HandleMouseInput() {
+		if (Input.GetMouseButtonDown(0)) {
+			CancelBuildMode();
+			isSelecting = true;
+			mouseStartPosition = Input.mousePosition;
+		}
+
+		if (Input.GetMouseButtonUp(0)) {
+			bool isMultiselecting = Input.GetButton("Multiselect");
+
+			if (!isMultiselecting) {
+				DeselectAll(false);
+			}
+
+			if (isSelecting) {
+				Bounds bounds = GetViewportBounds(mouseStartPosition, Input.mousePosition);
+				if (bounds.size.x > 0.01 && bounds.size.y > 0.01) {
+					//selection box is large enough, select entities inside
+					IEnumerable<Entity> entitiesToConsider;
+					if (OverallStateManager.Instance.IsOfflineTest) {
+						entitiesToConsider = FindObjectsOfType<Entity>();
+					} else {
+						entitiesToConsider = clientEntityManager.MySquad.Values;
+					}
+
+					foreach (Entity hitEntity in entitiesToConsider.Where(x => IsWithinBounds(bounds, x.transform.position))) {
+						if (!SelectedEntities.Contains(hitEntity)) {
+							SelectEntity(hitEntity);
+						} else if (isMultiselecting) {
+							DeselectEntity(hitEntity, true);
+						}
+					}
+
+					uiManager.UpdateSelectedEntities(SelectedEntities);
+				} else {
+					//selection box is too small, do point selection
+					Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+					RaycastHit hit;
+					if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
+						Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
+						if (hitEntity != null && hitEntity.PlayerId == clientGameManager.MyPlayer.ID) {
+							if (!SelectedEntities.Contains(hitEntity)) {
+								SelectEntity(hitEntity);
+							} else if (isMultiselecting) {
+								DeselectEntity(hitEntity, true);
+							}
+						}
+					}
+
+					uiManager.UpdateSelectedEntities(SelectedEntities);
+				}
+			}
+
+			isSelecting = false;
+		}
+
+		if (Input.GetMouseButtonUp(1)) {
+			if (SelectedEntities.Count > 0) {
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				RaycastHit hit;
+
+				if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerManager.Instance.clickableMask)) {
+					Entity hitEntity = hit.transform.gameObject.GetComponentInParent<Entity>();
+					if (hitEntity != null && hitEntity.TeamId != clientGameManager.MyPlayer.TeamId) {
+						IssueAttackCommand(SelectedEntities
+							.Where(x => x.CanAttackTarget && hitEntity.isInAir ? x.canAttackAir : x.canAttackGround)
+							.Select(x => x.ID).ToList(), hitEntity.ID);
+					} else {
+						IssueMoveCommand(SelectedEntities.Where(x => x.CanMove).Select(x => x.ID).ToList(), hit.point);
+					}
+				}
+			}
+		}
+	}
+
+	private void HandleMiscInputs() {
+		if (Input.GetButtonDown("Build")) {
+			DeselectAll();
+			isInBuildMode = true;
+			uiManager.OpenBuildMenu(buildCommands);
+		} else if (isInBuildMode) {
+			foreach (BuildCommand buildCommand in buildCommands) {
+				if (Input.GetKeyDown(buildCommand.key)) {
+					//check resource cost
+					Entity entityRef = clientEntityManager.GetEntityReference(buildCommand.targetTypeId);
+					if (entityRef != null) {
+						if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
+							DeselectAll();
+							SetTargeting(Instantiate<GameObject>(entityRef.GetComponent<EntityController>().targetingPrefab), (entityRef as Structure).resourceCost, entityRef, null);
+						}
+					} else {
+						PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.targetTypeId);
+						if (playerEventRef != null && clientGameManager.MyPlayer.Resources >= playerEventRef.resourceCost) {
+							DeselectAll();
+							SetTargeting(Instantiate<GameObject>(playerEventRef.targetingPrefab), playerEventRef.resourceCost, playerEventRef, null);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void HandleSelectionBasedInputs() {
+		if (Input.anyKeyDown) {
+			if (Input.GetButtonDown("Stop")) {
+				IssueStopCommand(SelectedEntities.Select(x => x.ID).ToList());
+			} else if (Input.GetButtonDown("Retreat")) {
+				IssueRetreatCommand(SelectedEntities.Select(x => x.ID).ToList());
+			} else if (Input.GetButtonDown("Attack")) {
+				SetTargeting(null, 0);
+
+				foreach (Entity selectedEntity in SelectedEntities) {
+					if (currentTargetingObject == null && selectedEntity.CanAttackLocation) {
+						SetTargeting(Instantiate<GameObject>(selectedEntity.EntityController.targetingPrefab), 0, null, selectedEntity);
+					}
+				}
+			} else if (Input.GetButtonDown("CameraFocus")) {
+				if (SelectedEntities.Count > 0) {
+					if (SelectedEntities[0].Equals(LastFocusedEntity)) {
+						LastFocusedEntity = SelectedEntities[0];
+						rtsCamera.SetFollowTarget(LastFocusedEntity.transform);
+					} else {
+						LastFocusedEntity = SelectedEntities[0];
+						rtsCamera.RefocusOn(LastFocusedEntity.transform.position);
+					}
+				}
+			} else {
+				Dictionary<CommandType, List<Entity>> commandEntites = new Dictionary<CommandType, List<Entity>>();
+
+				foreach (Entity selectedEntity in SelectedEntities) {
+					CommandType resultCommandType = selectedEntity.EntityController.GetCommandTypeFromInput();
+					if (resultCommandType != CommandType.NONE) {
+						if (!commandEntites.ContainsKey(resultCommandType)) {
+							commandEntites.Add(resultCommandType, new List<Entity>());
+						}
+						commandEntites[resultCommandType].Add(selectedEntity);
+					}
+				}
+
+				foreach (KeyValuePair<CommandType, List<Entity>> commandEntity in commandEntites) {
+					IssueAbilityCommand(commandEntity.Value.Select(x => x.ID).ToList(), commandEntity.Key);
+				}
 			}
 		}
 	}
@@ -380,6 +399,13 @@ public class PlayerInputManager : MonoBehaviour {
 			EntityCommand moveCommand = new EntityCommand(CommandType.MOVE, entityIds);
 			moveCommand.Point = target;
 			clientNetworkManager.SendCommand(moveCommand);
+		}
+	}
+
+	private void IssueRetreatCommand(List<string> entityIds) {
+		if (entityIds.Count > 0) {
+			EntityCommand retreatCommand = new EntityCommand(CommandType.RETREAT, entityIds);
+			clientNetworkManager.SendCommand(retreatCommand);
 		}
 	}
 

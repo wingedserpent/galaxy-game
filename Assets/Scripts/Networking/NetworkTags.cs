@@ -12,8 +12,9 @@ public static class NetworkTags {
 	public const int CapturePoint = 13;
 	public const int EntityUpdate = 20;
 	public const int EntityDeath = 21;
-	public const int PlayerEventUpdate = 22;
-	public const int PlayerEventEnd = 23;
+	public const int EntityDespawn = 22;
+	public const int PlayerEventUpdate = 23;
+	public const int PlayerEventEnd = 24;
 	public const int Command = 30;
 	public const int UnitList = 40;
 	public const int SquadSelection = 41;

@@ -23,6 +23,7 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		serverGameManager = ServerGameManager.Instance;
 
 		EntityController.OnDeath += HandleEntityDeath;
+		EntityController.OnDespawn += HandleEntityDespawn;
 		PlayerEvent.OnEventEnd += HandlePlayerEventEnd;
 
 		//register any entities already existing in the scene (for dev/testing convenience)
@@ -150,9 +151,9 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		}
 	}
 
-	public void DestroyEntity(string entityId) {
+	public void RemoveEntity(string entityId) {
 		if (entities.ContainsKey(entityId)) {
-			Destroy(entities[entityId].gameObject);
+			//Destroy(entities[entityId].gameObject); entities now destroy themselves
 			entities.Remove(entityId);
 		}
 	}
@@ -209,6 +210,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 			if (entity.PlayerId.Equals(sourcePlayerId)) {
 				if (command.Type == CommandType.MOVE && entity.CanMove) {
 					entity.EntityController.Move(command.Point, groupMovementCenter);
+				} else if (command.Type == CommandType.RETREAT && entity.CanMove) {
+					entity.EntityController.Retreat(serverGameManager.TeamSpawns[entity.TeamId]);
 				} else if (command.Type == CommandType.STOP) {
 					entity.EntityController.Stop();
 				} else if (command.Type == CommandType.ATTACK && entity.CanAttackTarget) {
@@ -225,7 +228,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 	}
 
 	public void HandleEntityDeath(Entity entity) {
-		entity.EntityController.Die();
+		serverNetworkManager.SendEntityDeath(entity);
+		//entity.EntityController.Die(0f); not necessary
 		
 		if (entity is Unit && playerUnits.ContainsKey(entity.PlayerId)) {
 			PlayerUnit playerUnit = (from pu in playerUnits[entity.PlayerId]
@@ -240,13 +244,25 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 			}
 		}
 
-		serverNetworkManager.SendEntityDeath(entity);
+		RemoveEntity(entity.ID);
+		Destroy(entity.gameObject);
+	}
 
-		DestroyEntity(entity.ID);
+	public void HandleEntityDespawn(Entity entity) {
+		PlayerUnit playerUnit = (from pu in playerUnits[entity.PlayerId]
+								 where pu.PlayerUnitId == (entity as Unit).PlayerUnitId
+								 select pu).FirstOrDefault();
+		if (playerUnit != null) {
+			playerUnit.CurrentHealth = entity.CurrentHealth;
+		}
+
+		serverNetworkManager.SendEntityDespawn(entity);
+		//entity.EntityController.CleanUpForDespawn(); not necessary
+		RemoveEntity(entity.ID);
 	}
 
 	public void HandlePlayerEventEnd(PlayerEvent playerEvent) {
-		playerEvent.End();
+		//playerEvent.End(); not necessary
 
 		serverNetworkManager.SendPlayerEventEnd(playerEvent);
 

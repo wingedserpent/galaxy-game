@@ -37,6 +37,7 @@ public class EntityCommand : IDarkRiftSerializable {
 
 public enum CommandType {
 	MOVE,
+	RETREAT,
 	STOP,
 	ATTACK,
 	ATTACK_LOCATION,

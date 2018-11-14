@@ -87,7 +87,7 @@ public class ClientGameManager : Singleton<ClientGameManager> {
 		uiManager.AddSystemMessage("Player left: " + player.Name);
 	}
 
-	public void OnSquadDead() {
+	public void OnSquadGone() {
 		uiManager.OpenSquadMenu();
 	}
 }

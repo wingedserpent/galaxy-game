@@ -6,6 +6,7 @@ using System.Linq;
 using DarkRift;
 
 public delegate void OnDeath(Entity entity);
+public delegate void OnDespawn(Entity entity);
 public delegate void OnVisibilityUpdated(bool isVisible);
 
 public class EntityController : MonoBehaviour, IDarkRiftSerializable {
@@ -31,6 +32,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	public bool AttackEffectTrigger { get; set; }
 	public bool AttackEndTrigger { get; set; }
 	public bool IsSelected { get; protected set; }
+	public bool IsRetreating { get; protected set; }
 
 	protected bool isAttackingAndInRange = false;
 	protected float attackCooldown = 0f;
@@ -42,7 +44,10 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected float damageIncreaseTimer = 0f;
 	protected GameObject targetedAreaMarker;
 
+	protected TeamSpawn retreatDestination;
+
 	public static event OnDeath OnDeath = delegate { };
+	public static event OnDespawn OnDespawn = delegate { };
 
 	public event OnVisibilityUpdated OnVisibilityUpdated = delegate { };
 
@@ -70,6 +75,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		AttackEndTrigger = false;
 		UpdateVisibility = true;
 		IsVisible = true;
+		IsRetreating = false;
 	}
 
 	protected virtual void Start() {
@@ -122,6 +128,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 				StopMovement();
 				SetCurrentDamage(entity.Weapon.Damage);
 			}
+			IsRetreating = false;
 
 			State = newState;
 		}
@@ -173,6 +180,10 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		if (agent.enabled && !agent.pathPending) {
 			if (agent.remainingDistance <= agent.stoppingDistance) {
 				if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f) {
+					if (IsRetreating) {
+						//TODO enforce a distance check on the retreating destination
+						OnDespawn(entity);
+					}
 					SetState(AIState.IDLE);
 				}
 			}
@@ -312,6 +323,14 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 	}
 
+	public virtual void Retreat(TeamSpawn myTeamSpawn) {
+		if (entity.CanMove) {
+			retreatDestination = myTeamSpawn;
+			Move(retreatDestination.transform.position);
+			IsRetreating = true;
+		}
+	}
+
 	public virtual void Stop() {
 		SetState(AIState.IDLE);
 	}
@@ -404,15 +423,36 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		return false;
 	}
 
-	public void Die() {
+	public void CleanUpForDespawn() {
 		if (EntityHUD != null) {
 			Destroy(EntityHUD.gameObject);
 		}
+	}
+
+	public IEnumerator Die(bool destroy, float destroyDelay = 0f) {
 		if (animator != null && animator.enabled) {
 			animator.SetTrigger("die");
 		}
-		if (audioSource != null) {
-			audioSource.PlayOneShot(deathSound);
+
+		if (destroy) {
+			if (destroyDelay > 0f) {
+				yield return new WaitForSeconds(destroyDelay);
+			}
+
+			//check not needed anymore?
+			//if (!isQuitting && (OverallStateManager.Instance == null || !OverallStateManager.Instance.IsInSceneTransition)) {
+			if (deathEffectPrefab != null) {
+				Instantiate<GameObject>(deathEffectPrefab.gameObject, transform.position, transform.rotation);
+			}
+			//}
+
+			if (audioSource != null) {
+				audioSource.PlayOneShot(deathSound);
+			}
+
+			CleanUpForDespawn();
+
+			Destroy(gameObject);
 		}
 	}
 
@@ -422,12 +462,6 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	protected virtual void OnDestroy() {
 		VisibilityManager.VisibilityTargetDispatch -= VisibilityTargetDispatch;
-
-		if (!isQuitting && (OverallStateManager.Instance == null || !OverallStateManager.Instance.IsInSceneTransition)) {
-			if (deathEffectPrefab != null) {
-				Instantiate<GameObject>(deathEffectPrefab.gameObject, transform.position, transform.rotation);
-			}
-		}
 	}
 
 	public void VisibilityTargetDispatch(ICollection<Entity> targets) {
