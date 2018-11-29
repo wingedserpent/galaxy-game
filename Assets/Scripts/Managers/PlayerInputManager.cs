@@ -10,7 +10,7 @@ public class PlayerInputManager : MonoBehaviour {
 
 	public Color selectionBoxInnerColor;
 	public Color selectionBoxBorderColor;
-	public List<BuildCommand> buildCommands;
+	public List<InputCommand> buildCommands;
 
 	private List<Entity> SelectedEntities { get; set; }
 	private Entity LastFocusedEntity;
@@ -277,17 +277,17 @@ public class PlayerInputManager : MonoBehaviour {
 			isInBuildMode = true;
 			uiManager.OpenBuildMenu(buildCommands);
 		} else if (isInBuildMode) {
-			foreach (BuildCommand buildCommand in buildCommands) {
+			foreach (InputCommand buildCommand in buildCommands) {
 				if (Input.GetKeyDown(buildCommand.key)) {
 					//check resource cost
-					Entity entityRef = clientEntityManager.GetEntityReference(buildCommand.targetTypeId);
+					Entity entityRef = clientEntityManager.GetEntityReference(buildCommand.command);
 					if (entityRef != null) {
 						if (clientGameManager.MyPlayer.Resources >= (entityRef as Structure).resourceCost) {
 							DeselectAll();
 							SetTargeting(Instantiate<GameObject>(entityRef.GetComponent<EntityController>().targetingPrefab), (entityRef as Structure).resourceCost, entityRef, null);
 						}
 					} else {
-						PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.targetTypeId);
+						PlayerEvent playerEventRef = clientEntityManager.GetPlayerEventReference(buildCommand.command);
 						if (playerEventRef != null && clientGameManager.MyPlayer.Resources >= playerEventRef.resourceCost) {
 							DeselectAll();
 							SetTargeting(Instantiate<GameObject>(playerEventRef.targetingPrefab), playerEventRef.resourceCost, playerEventRef, null);
@@ -343,8 +343,10 @@ public class PlayerInputManager : MonoBehaviour {
 	}
 
 	private void CancelBuildMode() {
-		isInBuildMode = false;
-		uiManager.CloseBuildMenu();
+		if (isInBuildMode) {
+			isInBuildMode = false;
+			uiManager.CloseBuildMenu();
+		}
 	}
 
 	private void SelectEntity(Entity entity) {

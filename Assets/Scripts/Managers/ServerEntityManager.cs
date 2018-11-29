@@ -229,8 +229,8 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 
 	public void HandleEntityDeath(Entity entity) {
 		serverNetworkManager.SendEntityDeath(entity);
-		//entity.EntityController.Die(0f); not necessary
-		
+		//entity.EntityController.Die(0f); not necessary on server
+
 		if (entity is Unit && playerUnits.ContainsKey(entity.PlayerId)) {
 			PlayerUnit playerUnit = (from pu in playerUnits[entity.PlayerId]
 									 where pu.PlayerUnitId == (entity as Unit).PlayerUnitId
@@ -257,12 +257,12 @@ public class ServerEntityManager : Singleton<ServerEntityManager> {
 		}
 
 		serverNetworkManager.SendEntityDespawn(entity);
-		//entity.EntityController.CleanUpForDespawn(); not necessary
+		//entity.EntityController.CleanUpForDespawn(); not necessary on server
 		RemoveEntity(entity.ID);
 	}
 
 	public void HandlePlayerEventEnd(PlayerEvent playerEvent) {
-		//playerEvent.End(); not necessary
+		//playerEvent.End(); not necessary on server
 
 		serverNetworkManager.SendPlayerEventEnd(playerEvent);
 

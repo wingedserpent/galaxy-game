@@ -17,6 +17,7 @@ public class UIManager : Singleton<UIManager> {
 	public PlayerListController playerListController;
 	public Text scoreDisplay;
 	public Text resourceDisplay;
+	public RectTransform entityHudContainer;
 
 	public bool IsUIReceivingInput { get; private set; }
 
@@ -80,12 +81,12 @@ public class UIManager : Singleton<UIManager> {
 		playerInputManager.ForceSelectedEntity(entity);
 	}
 
-	public void OpenBuildMenu(List<BuildCommand> buildCommands) {
-		infoWindowController.OpenBuildMenu(buildCommands);
+	public void OpenBuildMenu(List<InputCommand> buildCommands) {
+		infoWindowController.OpenCommandMenu(buildCommands);
 	}
 
 	public void CloseBuildMenu() {
-		infoWindowController.CloseBuildMenu();
+		infoWindowController.CloseCommandMenu();
 	}
 
 	public void OpenChatWindow() {

@@ -20,6 +20,8 @@ public class TrebuchetController : UnitController {
 		base.Awake();
 
 		trebuchet = GetComponent<Trebuchet>();
+
+		AvailableCommands.Add(new InputCommand(KeyCode.E, "Attack"));
 	}
 
 	protected override void Update() {

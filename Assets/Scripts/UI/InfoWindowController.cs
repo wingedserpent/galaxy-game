@@ -9,9 +9,10 @@ public class InfoWindowController : MonoBehaviour {
 	public Text nameText;
 	public Text healthText;
 	public Text shieldText;
-	public Text buildMenuText;
+	public Text commandMenuText;
 	public RectTransform entityMultiPortraitContainer;
 	public EntityMultiPortrait entityMultiPortraitPrefab;
+	public List<InputCommand> noSelectionCommands;
 
 	private Entity selectedSingleEntity;
 	private Dictionary<string, EntityMultiPortrait> entityMultiPortraits = new Dictionary<string, EntityMultiPortrait>();
@@ -20,6 +21,7 @@ public class InfoWindowController : MonoBehaviour {
 		nameText.text = "";
 		healthText.text = "";
 		shieldText.text = "";
+		CloseCommandMenu();
 	}
 
 	private void Update() {
@@ -37,7 +39,11 @@ public class InfoWindowController : MonoBehaviour {
 				entityMultiPortraits.Remove(missingEntity);
 			}
 
-			PopulateMultipleEntityFields();
+			if (entityMultiPortraits.Count > 0) {
+				PopulateMultipleEntityFields();
+			} else {
+				ClearMultipleEntityFields();
+			}
 		}
 	}
 
@@ -45,25 +51,30 @@ public class InfoWindowController : MonoBehaviour {
 		gameObject.SetActive(true);
 	}
 
-	public void OpenBuildMenu(List<BuildCommand> buildCommands) {
-		buildMenuText.gameObject.SetActive(true);
-
-		buildMenuText.text = "";
-		foreach (BuildCommand buildCommand in buildCommands) {
-			buildMenuText.text += buildCommand.key + " - " + buildCommand.targetTypeId + "\n";
+	public void OpenCommandMenu(List<InputCommand> commands) {
+		commandMenuText.text = "";
+		foreach (InputCommand command in commands) {
+			commandMenuText.text += command.key + " - " + command.command + (command.cost > 0 ? " (" + command.cost + ")" : "") + "\n";
 		}
 	}
 
-	public void CloseBuildMenu() {
-		buildMenuText.gameObject.SetActive(false);
+	public void CloseCommandMenu() {
+		commandMenuText.text = "";
+		foreach (InputCommand command in noSelectionCommands) {
+			commandMenuText.text += command.key + " - " + command.command + "\n";
+		}
 	}
 
 	public void UpdateSelectedEntities(List<Entity> newEntities) {
-		if (newEntities.Count == 1 && newEntities[0] != null && newEntities[0] != selectedSingleEntity) {
-			ClearMultipleEntityFields();
-			selectedSingleEntity = newEntities[0];
-		} else if (newEntities != null) {
+		if (newEntities.Count == 1) {
+			if (newEntities[0] != null && newEntities[0] != selectedSingleEntity) {
+				ClearMultipleEntityFields();
+				selectedSingleEntity = newEntities[0];
+				OpenCommandMenu(selectedSingleEntity.EntityController.AvailableCommands);
+			}
+		} else if (newEntities.Count > 1) {
 			ClearSingleEntityFields();
+			commandMenuText.gameObject.SetActive(false);
 
 			List<string> entitiesToRemove = entityMultiPortraits.Where(x => !newEntities.Contains(x.Value.Entity)).Select(x => x.Key).ToList();
 			foreach (string entityId in entitiesToRemove) {
@@ -78,6 +89,9 @@ public class InfoWindowController : MonoBehaviour {
 					entityMultiPortraits.Add(entity.ID, entityMultiPortrait);
 				}
 			}
+		} else {
+			ClearSingleEntityFields();
+			ClearMultipleEntityFields();
 		}
 	}
 
@@ -90,10 +104,13 @@ public class InfoWindowController : MonoBehaviour {
 	}
 
 	protected void ClearSingleEntityFields() {
+		if (nameText.text != "") {
+			CloseCommandMenu();
+		}
 		selectedSingleEntity = null;
-		nameText.text = null;
-		healthText.text = null;
-		shieldText.text = null;
+		nameText.text = "";
+		healthText.text = "";
+		shieldText.text = "";
 	}
 
 	protected void PopulateMultipleEntityFields() {
@@ -101,6 +118,8 @@ public class InfoWindowController : MonoBehaviour {
 	}
 
 	protected void ClearMultipleEntityFields() {
+		commandMenuText.gameObject.SetActive(true);
+
 		foreach (EntityMultiPortrait entityMultiPortrait in entityMultiPortraits.Values) {
 			Destroy(entityMultiPortrait.gameObject);
 		}

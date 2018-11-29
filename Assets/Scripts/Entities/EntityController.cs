@@ -20,6 +20,8 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 
 	public List<WeaponEffect> weaponEffects;
 
+	public List<InputCommand> AvailableCommands { get; protected set; }
+
 	public AIState State { get; set; }
 	public bool DamagedTrigger { get; set; }
 	public bool UpdateVisibility { get; set; }
@@ -44,6 +46,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 	protected float damageIncreaseTimer = 0f;
 	protected GameObject targetedAreaMarker;
 
+	protected const float retreatMaxDistance = 1f;
 	protected TeamSpawn retreatDestination;
 
 	public static event OnDeath OnDeath = delegate { };
@@ -76,11 +79,15 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		UpdateVisibility = true;
 		IsVisible = true;
 		IsRetreating = false;
+
+		AvailableCommands = new List<InputCommand>();
+		AvailableCommands.Add(new InputCommand(KeyCode.Q, "Stop"));
+		AvailableCommands.Add(new InputCommand(KeyCode.R, "Retreat"));
 	}
 
 	protected virtual void Start() {
 		VisibilityManager.VisibilityTargetDispatch += VisibilityTargetDispatch;
-
+		
 		if (vision != null) {
 			vision.viewRadius = entity.VisionRange;
 		}
@@ -90,7 +97,7 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 		}
 
 		if (NetworkStatus.Instance.IsClient && unitHUDPrefab != null) {
-			EntityHUD = Instantiate<GameObject>(unitHUDPrefab.gameObject, FindObjectOfType<Canvas>().transform).GetComponent<EntityHUD>();
+			EntityHUD = Instantiate<GameObject>(unitHUDPrefab.gameObject, UIManager.Instance.entityHudContainer).GetComponent<EntityHUD>();
 			EntityHUD.Entity = entity;
 		}
 
@@ -181,8 +188,13 @@ public class EntityController : MonoBehaviour, IDarkRiftSerializable {
 			if (agent.remainingDistance <= agent.stoppingDistance) {
 				if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f) {
 					if (IsRetreating) {
-						//TODO enforce a distance check on the retreating destination
-						OnDespawn(entity);
+						Vector3 posXZ = transform.position;
+						posXZ.y = 0f;
+						Vector3 retreatXZ = retreatDestination.transform.position;
+						retreatXZ.y = 0f;
+						if (Vector3.Distance(posXZ, retreatXZ) <= retreatMaxDistance) {
+							OnDespawn(entity);
+						}
 					}
 					SetState(AIState.IDLE);
 				}
