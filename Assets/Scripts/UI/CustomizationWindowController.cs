@@ -53,6 +53,8 @@ public class CustomizationWindowController : MonoBehaviour, ICustomizationMenu {
 			Destroy(equipmentOption.gameObject);
 		}
 
+		MainMenuManager.Instance.armoryMenuController.OnUnitDeselected(customizableUnit);
+
 		customizableUnit = null;
 	}
 

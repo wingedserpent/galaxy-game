@@ -9,8 +9,12 @@ public class ArmoryMenuController : MonoBehaviour {
 
 	public Transform unitListContainer;
 	public CustomizableUnit customizableUnitPrefab;
+	public Transform previewContainer;
+
+	public EntityDatabase entityDatabase;
 
 	private List<CustomizableUnit> allCustomizableUnits = new List<CustomizableUnit>();
+	private Entity previewEntity;
 
 	public void OpenMenu() {
 		ClientNetworkManager.Instance.RequestAllUnits();
@@ -36,7 +40,19 @@ public class ArmoryMenuController : MonoBehaviour {
 
 	public void OnClose() {
 		ClientNetworkManager.Instance.SendCustomizedUnits(allCustomizableUnits.Select(x => x.SelectedPlayerUnit).ToList());
-
+		if (previewEntity != null) {
+			Destroy(previewEntity.gameObject);
+		}
 		CloseMenu();
+	}
+
+	public void OnUnitSelected(CustomizableUnit customizableUnit) {
+		previewEntity = entityDatabase.GetEntityInstance(customizableUnit.SelectedPlayerUnit.UnitType, Vector3.zero, Quaternion.identity, previewContainer);
+	}
+
+	public void OnUnitDeselected(CustomizableUnit customizableUnit) {
+		if (previewEntity != null) {
+			Destroy(previewEntity.gameObject);
+		}
 	}
 }

@@ -63,13 +63,9 @@ public class CustomizableUnit : MonoBehaviour {
 		}
 	}
 
-	private void Awake() {
-		
-	}
-
 	public void OnCustomize() {
-		CustomizationWindowController custWindow = MainMenuManager.Instance.customizationWindowController;
-		custWindow.Populate(this);
+		MainMenuManager.Instance.armoryMenuController.OnUnitSelected(this);
+		MainMenuManager.Instance.customizationWindowController.Populate(this);
 	}
 
 	public void RecalculateSquadCost() {
