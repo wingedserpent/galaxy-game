@@ -48,6 +48,8 @@ public class ArmoryMenuController : MonoBehaviour {
 
 	public void OnUnitSelected(CustomizableUnit customizableUnit) {
 		previewEntity = entityDatabase.GetEntityInstance(customizableUnit.SelectedPlayerUnit.UnitType, Vector3.zero, Quaternion.identity, previewContainer);
+		previewEntity.GetComponent<EntityController>().enabled = false;
+		previewEntity.GetComponentInChildren<Vision>().enabled = false;
 	}
 
 	public void OnUnitDeselected(CustomizableUnit customizableUnit) {

@@ -12,6 +12,7 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 	public int gainAmount;
 	public float gainFrequency;
 	public Colorable colorable;
+	public PercentageRadius percentageRadius;
 
 	public CaptureState CaptureState { get; set; }
 	public ushort CapturingTeamId { get; set; }
@@ -39,6 +40,11 @@ public class CapturePoint : MonoBehaviour, IDarkRiftSerializable {
 
 			if (CaptureState == CaptureState.CAPTURING) {
 				captureTimer += Time.deltaTime;
+
+				if (percentageRadius != null) {
+					percentageRadius.SetDisplayAmounts(captureTimer, captureTime);
+				}
+
 				if (captureTimer >= captureTime) {
 					OwningTeamId = CapturingTeamId;
 					CaptureState = CaptureState.CAPTURED;

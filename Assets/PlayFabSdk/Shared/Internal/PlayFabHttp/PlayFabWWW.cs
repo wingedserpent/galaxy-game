@@ -6,6 +6,7 @@ using PlayFab.SharedModels;
 using UnityEngine;
 #if UNITY_5_4_OR_NEWER
 using UnityEngine.Networking;
+using CompressionLevel = Ionic.Zlib.CompressionLevel;
 #else
 using UnityEngine.Experimental.Networking;
 #endif

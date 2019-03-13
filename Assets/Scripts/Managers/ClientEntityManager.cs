@@ -129,7 +129,7 @@ public class ClientEntityManager : Singleton<ClientEntityManager> {
 	public void HandleEntityDeath(string entityId) {
 		if (entities.ContainsKey(entityId)) {
 			Entity entity = entities[entityId];
-			entity.EntityController.Die(true, 1f);
+			StartCoroutine(entity.EntityController.Die(true, 1f));
 			RemoveEntity(entity.ID);
 		}
 	}

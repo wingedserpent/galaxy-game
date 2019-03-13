@@ -51,10 +51,9 @@ public class Tweener : MonoBehaviour {
 			ltdescr = LeanTween.move(gameObject, TargetPos, time);
 		}
 
-		ltdescr.setOrientToPath(orientToPath);
-
-		if (easingCurve != null) {
+		if (easeType == LeanTweenType.animationCurve) {
 			ltdescr.setEase(easingCurve);
+			ltdescr.setOrientToPath(orientToPath);
 		} else {
 			ltdescr.setEase(easeType);
 		}
