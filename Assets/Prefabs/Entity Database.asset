@@ -4,7 +4,8 @@
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -12,12 +13,12 @@ MonoBehaviour:
   m_Name: Entity Database
   m_EditorClassIdentifier: 
   units:
-  - {fileID: 114414286257667330, guid: 633c091aedda0e44c9999c41d6ae41db, type: 2}
-  - {fileID: 114403446751357546, guid: ab1e411cd6962ea44b7604b26088c551, type: 2}
-  - {fileID: 114834448093211342, guid: b7fc99e644655324fa384b5740264a12, type: 2}
-  - {fileID: 114543035274241992, guid: 9f2f8e6b9cec46e438215366d72b5b83, type: 2}
-  - {fileID: 114381355124539376, guid: b654c2c9ed44b37458b4ef48406a7f2a, type: 2}
+  - {fileID: 8323884348737338373, guid: 633c091aedda0e44c9999c41d6ae41db, type: 3}
+  - {fileID: 114403446751357546, guid: ab1e411cd6962ea44b7604b26088c551, type: 3}
+  - {fileID: 114834448093211342, guid: b7fc99e644655324fa384b5740264a12, type: 3}
+  - {fileID: 114543035274241992, guid: 9f2f8e6b9cec46e438215366d72b5b83, type: 3}
+  - {fileID: 114436048348994670, guid: b654c2c9ed44b37458b4ef48406a7f2a, type: 3}
   structures:
-  - {fileID: 114702009273401912, guid: 2247792e9ebf23a4c8562e58348a6b63, type: 2}
+  - {fileID: 9088253162421613777, guid: 2247792e9ebf23a4c8562e58348a6b63, type: 3}
   playerEvents:
-  - {fileID: 114157544590271158, guid: 7e9d238c56710db40ae251f233794d9b, type: 2}
+  - {fileID: 114157544590271158, guid: 7e9d238c56710db40ae251f233794d9b, type: 3}

@@ -67,6 +67,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -91,7 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 785c7e1f3cf55624fa289cce95fca8ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recursive: 1
+  recursive: 0
 --- !u!1 &3944544636643400688
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,6 +157,7 @@ GameObject:
   - component: {fileID: 7014888314417203289}
   - component: {fileID: 648416820755500511}
   - component: {fileID: 4373025565721684779}
+  - component: {fileID: 5935166143085561071}
   m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
@@ -210,6 +212,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -235,3 +238,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fillTransform: {fileID: 7532622393618024997}
+--- !u!114 &5935166143085561071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4056406914735674497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 785c7e1f3cf55624fa289cce95fca8ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recursive: 0
